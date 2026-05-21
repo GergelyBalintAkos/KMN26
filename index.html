@@ -308,12 +308,11 @@ function render() {
   var t=ROWS.length,k=ROWS.filter(function(r){return!r.ures;}).length;
   var u=ROWS.filter(function(r){return r.ures;}).length;
   var td=ROWS.filter(function(r){return r.helyzet&&r.helyzet.trim().toLowerCase()!=='ok';}).length;
-  var sm=ROWS.reduce(function(a,r){return a+(r.huf||0);},0);
   document.getElementById('stats').innerHTML=
     '<div class="stat"><div class="n">'+t+'</div><div class="l">Összes szlot</div></div>'+
     '<div class="stat"><div class="n" style="color:green">'+k+'</div><div class="l">Kitöltve</div></div>'+
     '<div class="stat"><div class="n" style="color:red">'+u+'</div><div class="l">Üres</div></div>'+
-    '<div class="stat"><div class="n" style="color:orange">'+td+'</div><div class="l">Teendő</div></div>'+
+    '<div class="stat"><div class="n" style="color:orange">'+td+'</div><div class="l">Teendő</div></div>';
   document.getElementById('legend').style.display=TAB==='status'?'flex':'none';
   document.getElementById('maintable').className=TAB==='status'?'status-table':'';
   if(TAB==='status') renderStatus(rows);
@@ -369,18 +368,14 @@ function openModal(i) {
   document.getElementById('msub').textContent=r.dat+(r.nap?' · '+r.nap:'')+(r.t1?' · '+r.t1:'');
   var h='';
   if(r.helyzet) h+='<div class="todo">'+r.helyzet+'</div>';
-
-  // Emlékeztető üzenet generálás
   var uzenet=buildUzenet(r);
   if(uzenet) {
     h+='<div class="uzenet-box">';
     h+='<h4>📨 Emlékeztető üzenet — másolható</h4>';
-    h+='<div class="uzenet-text" id="uzenet-text-'+i+'">'+uzenet+'</div>';
-    h+='<button class="copy-btn" onclick="copyUzenet('+i+',\''+uzenet.replace(/'/g,"\\'").replace(/\n/g,'\\n')+'\')" id="copy-btn-'+i+'">📋 Másolás vágólapra</button>';
-    h+='</div>';
-    h+='<hr class="divider">';
+    h+='<div class="uzenet-text">'+uzenet+'</div>';
+    h+='<button class="copy-btn" id="copy-btn-'+i+'" onclick="copyUzenet('+i+',this)">📋 Másolás vágólapra</button>';
+    h+='</div><hr class="divider">';
   }
-
   h+='<div class="mgrid">';
   h+='<div><div class="ml">Felelős</div><div class="mv">'+r.felelos+'</div></div>';
   h+='<div><div class="ml">Telefon</div><div class="mv">'+r.tel+'</div></div>';
@@ -396,10 +391,10 @@ function openModal(i) {
   document.getElementById('modal').classList.add('open');
 }
 
-function copyUzenet(i, szoveg) {
-  var text=szoveg.replace(/\\n/g,'\n');
+function copyUzenet(i, btn) {
+  var box=btn.previousElementSibling;
+  var text=box.textContent;
   navigator.clipboard.writeText(text).then(function(){
-    var btn=document.getElementById('copy-btn-'+i);
     btn.textContent='✅ Másolva!';
     btn.classList.add('copied');
     setTimeout(function(){
