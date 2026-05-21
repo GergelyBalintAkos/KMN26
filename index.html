@@ -356,7 +356,8 @@ function openModal(i){
     if(!lbl)return;
     var v=r[ci]||'';
     var full=[8,13,18,19,20,21,22,23,24,40,41,42,43,44].indexOf(ci)>=0;
-    var vhtml=v?makeLink(v):'—';
+    if(v&&v.trim().toLowerCase()==='x')return;
+var vhtml=v?makeLink(v):'—';
     h+='<div class="'+(full?'mf':'')+'"><div class="ml">'+lbl+'</div><div class="mv">'+vhtml+'</div></div>';
   });
   h+='</div>';
