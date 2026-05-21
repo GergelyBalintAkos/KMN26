@@ -343,7 +343,7 @@ function openModal(i){
   h+='<div class="mgrid">';
   var visCols=TAB_COLS[TAB]||[];
   visCols.forEach(function(ci){
-    if(ci<5)return;
+    if(ci<0)return;
     var lbl=ALL_HEADERS[ci]||'';
     if(!lbl)return;
     var v=r[ci]||'';
