@@ -8,7 +8,7 @@
 body{font-family:sans-serif;padding:20px;background:#f9f9f7;color:#222}
 h1{font-size:20px;margin-bottom:5px}
 p{font-size:13px;color:#888;margin-bottom:15px}
-.bar{background:#eee;padding:10px 15px;border-radius:8px;margin-bottom:15px;font-size:13px;display:flex;align-items:center;gap:10px}
+.bar{background:#eee;padding:10px 15px;border-radius:8px;margin-bottom:15px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dot{width:8px;height:8px;border-radius:50%;background:green;display:inline-block}
 button{padding:6px 12px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:13px}
 .tabs{display:flex;gap:5px;margin-bottom:15px;flex-wrap:wrap}
@@ -24,7 +24,7 @@ input{min-width:200px}
 .wrap{overflow-x:auto;background:#fff;border:1px solid #eee;border-radius:8px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{padding:10px 12px;background:#f5f5f3;text-align:left;font-size:12px;color:#666;white-space:nowrap;cursor:pointer}
-td{padding:9px 12px;border-top:1px solid #f0f0f0;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td{padding:9px 12px;border-top:1px solid #f0f0f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 tr:hover td{background:#fafafa;cursor:pointer}
 tr.ures td{color:#bbb;font-style:italic}
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
@@ -35,6 +35,14 @@ tr.ures td{color:#bbb;font-style:italic}
 .bok{background:#d8f5d8;color:#0a5010}
 .bvr{background:#fff3d8;color:#705010}
 .btd{background:#ffd8d8;color:#700010}
+.ok{color:#3a8a3a;font-size:16px}
+.vr{color:#cc8800;font-size:16px}
+.hi{color:#cc3300;font-size:16px}
+.ur{color:#bbb;font-size:16px}
+.status-table th{white-space:nowrap;font-size:11px;padding:8px 6px;writing-mode:horizontal-tb}
+.status-table td{padding:8px 6px;text-align:center;font-size:15px}
+.status-table td:first-child{text-align:left;font-size:13px;white-space:nowrap;padding-left:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.status-table td:nth-child(2){text-align:left;font-size:12px;color:#888;white-space:nowrap}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;justify-content:center;align-items:flex-start;padding-top:40px}
 .modal.open{display:flex}
 .mbox{background:#fff;border-radius:10px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto;padding:20px}
@@ -46,6 +54,8 @@ tr.ures td{color:#bbb;font-style:italic}
 .mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .todo{background:#fff8e8;border-radius:6px;padding:10px;color:#704000;font-size:13px;margin-bottom:15px;white-space:pre-wrap}
 .empty{text-align:center;padding:40px;color:#aaa}
+.legend{display:flex;gap:15px;font-size:12px;color:#666;margin-bottom:10px;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:4px}
 </style>
 </head>
 <body>
@@ -59,6 +69,7 @@ tr.ures td{color:#bbb;font-style:italic}
 <div class="tabs">
   <button class="tab on" onclick="setTab('all',this)">📋 Összes</button>
   <button class="tab" onclick="setTab('todo',this)">✅ Teendők</button>
+  <button class="tab" onclick="setTab('status',this)">📊 Státusz</button>
   <button class="tab" onclick="setTab('money',this)">💰 Pénzügy</button>
   <button class="tab" onclick="setTab('cater',this)">🍽️ Catering</button>
 </div>
@@ -68,7 +79,13 @@ tr.ures td{color:#bbb;font-style:italic}
   <select id="fdat" onchange="render()"><option value="">Minden dátum</option></select>
 </div>
 <div class="stats" id="stats"></div>
-<div class="wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+<div id="legend" class="legend" style="display:none">
+  <span><span class="ok">✅</span> Megvan</span>
+  <span><span class="vr">⏳</span> Várom / TBA</span>
+  <span><span class="hi">❌</span> Hiányzik</span>
+  <span><span class="ur">—</span> Nincs info</span>
+</div>
+<div class="wrap"><table id="maintable"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
 <div style="font-size:12px;color:#888;padding:8px 0" id="count"></div>
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="mbox">
@@ -80,6 +97,25 @@ tr.ures td{color:#bbb;font-style:italic}
 <script>
 var ROWS=[], TAB='all', SK=null, SD=1;
 var SID='1TU1LasWxZE2wuFUsAXq9hEzyAIym3BDIUnVTmwG18OQ';
+
+var STATUS_COLS=[
+  {k:'fotok',l:'Fotók'},
+  {k:'leiras',l:'Leírás'},
+  {k:'rider',l:'Rider'},
+  {k:'jarmuvek',l:'Járművek'},
+  {k:'stab',l:'Stáb'},
+  {k:'fellepo_szam',l:'Fellépők'},
+  {k:'erkezes_dat',l:'Érk. dátum'},
+  {k:'erkezes_ido',l:'Érk. idő'},
+  {k:'visszaut_dat',l:'Visszaut.'},
+  {k:'visszaut_ido',l:'Visszaut. idő'},
+  {k:'checkin',l:'Check In'},
+  {k:'checkout',l:'Check Out'},
+  {k:'szobak',l:'Szobák'},
+  {k:'szallaslista',l:'Szálláslista'},
+  {k:'veget',l:'Veget/Allerg'},
+  {k:'playlist',l:'Playlist'},
+];
 
 function parseCSV(text) {
   var rows=[], row=[], cur='', q=false;
@@ -101,15 +137,7 @@ function na(s) {
 function mapRows(grid) {
   if(grid.length<2) return [];
   var h=grid[0], ix={};
-
-  // Rögzített indexek - az első sor alapján
-  ix.muv=0;   // MŰVÉSZ / EGYÜTTES NEVE - mindig 0. oszlop
-  ix.hely=1;  // Helyszín - mindig 1. oszlop
-  ix.dat=2;   // Dátum - mindig 2. oszlop
-  ix.nap=3;   // Nap - mindig 3. oszlop
-  ix.t1=4;    // Kezdési idő - mindig 4. oszlop
-
-  // A többit keresés alapján
+  ix.muv=0; ix.hely=1; ix.dat=2; ix.nap=3; ix.t1=4;
   for(var i=5;i<h.length;i++) {
     var l=na(h[i]);
     if(l.indexOf('jelenlegi')>=0||l.indexOf('feladatok')>=0) ix.helyzet=i;
@@ -126,16 +154,29 @@ function mapRows(grid) {
     else if(l.indexOf('culina')>=0&&l.indexOf('20')>=0) ix.cv21=i;
     else if(l.indexOf('culina')>=0&&l.indexOf('22')>=0) ix.cv22=i;
     else if(l.indexOf('culina')>=0&&l.indexOf('farkas')>=0) ix.cfu=i;
-    else if(l.indexOf('rider')>=0) ix.rider=i;
-    else if(l.indexOf('backstage')>=0) ix.back=i;
+    else if(l.indexOf('foto')>=0&&l.indexOf('tovabb')>=0) ix.fotok_kuldve=i;
+    else if(l.indexOf('foto')>=0&&l.indexOf('tovabb')<0&&l.indexOf('kuldve')<0) ix.fotok=i;
+    else if(l.indexOf('leiras')>=0&&l.indexOf('tovabb')>=0) ix.leiras_kuldve=i;
+    else if(l.indexOf('leiras')>=0&&l.indexOf('tovabb')<0) ix.leiras=i;
+    else if(l.indexOf('rider')>=0||l.indexOf('technikai rider')>=0) ix.rider=i;
+    else if(l.indexOf('jarmuvek')>=0||l.indexOf('jarmu')>=0) ix.jarmuvek=i;
+    else if(l.indexOf('teljes stab')>=0||l.indexOf('stab szama')>=0||(l.indexOf('stab')>=0&&l.indexOf('fellepo')<0)) ix.stab=i;
+    else if(l.indexOf('fellepo')>=0&&l.indexOf('szama')>=0) ix.fellepo_szam=i;
+    else if(l.indexOf('erkezes')>=0&&l.indexOf('datuma')>=0) ix.erkezes_dat=i;
+    else if(l.indexOf('erkezes')>=0&&l.indexOf('idopontja')>=0) ix.erkezes_ido=i;
+    else if(l.indexOf('visszautazas')>=0&&l.indexOf('datuma')>=0) ix.visszaut_dat=i;
+    else if(l.indexOf('visszautazas')>=0&&l.indexOf('idopontja')>=0) ix.visszaut_ido=i;
+    else if(l.indexOf('check in')>=0&&l.indexOf('datuma')>=0) ix.checkin=i;
+    else if(l.indexOf('check out')>=0&&l.indexOf('datuma')>=0) ix.checkout=i;
+    else if(l.indexOf('szobak szama')>=0||l.indexOf('szobak')>=0) ix.szobak=i;
+    else if(l.indexOf('szallaslista')>=0) ix.szallaslista=i;
+    else if(l.indexOf('vegetarianus')>=0||l.indexOf('allergi')>=0) ix.veget=i;
+    else if(l.indexOf('playlist')>=0) ix.playlist=i;
   }
-
   var res=[];
   for(var r=1;r<grid.length;r++) {
     var row=grid[r];
-    var muv=row[0]||'';
-    var hely=row[1]||'';
-    var dat=row[2]||'';
+    var muv=row[0]||'', hely=row[1]||'', dat=row[2]||'';
     if(!muv&&!hely&&!dat) continue;
     var pm=function(v){var m=String(v||'').replace(/[.\s]/g,'').match(/\d+/);return m?parseInt(m[0]):null;};
     res.push({
@@ -148,11 +189,25 @@ function mapRows(grid) {
       szolg: row[ix.szolg]||'', bistro: row[ix.bistro]||'',
       ceb: row[ix.ceb]||'', cv21: row[ix.cv21]||'',
       cv22: row[ix.cv22]||'', cfu: row[ix.cfu]||'',
-      rider: row[ix.rider]||'', back: row[ix.back]||'',
+      fotok: row[ix.fotok]||'', leiras: row[ix.leiras]||'',
+      rider: row[ix.rider]||'', jarmuvek: row[ix.jarmuvek]||'',
+      stab: row[ix.stab]||'', fellepo_szam: row[ix.fellepo_szam]||'',
+      erkezes_dat: row[ix.erkezes_dat]||'', erkezes_ido: row[ix.erkezes_ido]||'',
+      visszaut_dat: row[ix.visszaut_dat]||'', visszaut_ido: row[ix.visszaut_ido]||'',
+      checkin: row[ix.checkin]||'', checkout: row[ix.checkout]||'',
+      szobak: row[ix.szobak]||'', szallaslista: row[ix.szallaslista]||'',
+      veget: row[ix.veget]||'', playlist: row[ix.playlist]||'',
       ures: !muv
     });
   }
   return res;
+}
+
+function cellStatus(v) {
+  if(!v||v.trim()==='') return '<span class="ur" title="Hiányzik">—</span>';
+  var l=v.toLowerCase();
+  if(l==='tba'||l.indexOf('varom')>=0||l.indexOf('várom')>=0||l.indexOf('igerte')>=0||l.indexOf('ígérte')>=0||l.indexOf('varjuk')>=0) return '<span class="vr" title="'+v+'">⏳</span>';
+  return '<span class="ok" title="'+v+'">✅</span>';
 }
 
 function load() {
@@ -210,22 +265,28 @@ var COLS={
   cater:[{k:'dat',l:'Dátum'},{k:'muv',l:'Művész'},{k:'hely',l:'Helyszín'},{k:'bistro',l:'Bistro'},{k:'ceb',l:'Culina ebéd'},{k:'cv21',l:'Vacsora 20:30'},{k:'cv22',l:'Vacsora 22:30'},{k:'cfu',l:'Farkas u.'}]
 };
 
-function render() {
+function getFiltered() {
   var q=(document.getElementById('q').value||'').toLowerCase();
   var fh=document.getElementById('fhely').value;
   var fd=document.getElementById('fdat').value;
-  var rows=ROWS.filter(function(r){
-    if(TAB==='todo'&&!r.helyzet&&!r.ures) return false;
+  return ROWS.filter(function(r){
+    if(r.ures) return false;
+    if(TAB==='todo'&&!r.helyzet) return false;
     if(TAB==='money'&&!r.osszeg) return false;
     if(q&&Object.values(r).join(' ').toLowerCase().indexOf(q)<0) return false;
-    if(fh&&r.hely.replace(/\n/g,' ').trim()!==fh.replace(/\n/g,' ').trim()) return false;
+    if(fh&&r.hely!==fh) return false;
     if(fd&&r.dat!==fd) return false;
     return true;
   });
+}
+
+function render() {
+  var rows=getFiltered();
   if(SK) rows.sort(function(a,b){
     var x=a[SK]||'',y=b[SK]||'';
     return typeof x==='number'?(x-y)*SD:String(x).localeCompare(String(y),'hu')*SD;
   });
+
   var t=ROWS.length,k=ROWS.filter(function(r){return!r.ures;}).length;
   var u=ROWS.filter(function(r){return r.ures;}).length;
   var td=ROWS.filter(function(r){return r.helyzet&&r.helyzet.trim().toLowerCase()!=='ok';}).length;
@@ -236,12 +297,25 @@ function render() {
     '<div class="stat"><div class="n" style="color:red">'+u+'</div><div class="l">Üres</div></div>'+
     '<div class="stat"><div class="n" style="color:orange">'+td+'</div><div class="l">Teendő</div></div>'+
     '<div class="stat"><div class="n" style="font-size:14px">'+sm.toLocaleString('hu-HU')+'</div><div class="l">Összeg HUF</div></div>';
+
+  document.getElementById('legend').style.display=TAB==='status'?'flex':'none';
+  document.getElementById('maintable').className=TAB==='status'?'status-table':'';
+
+  if(TAB==='status') {
+    renderStatus(rows);
+  } else {
+    renderNormal(rows);
+  }
+  document.getElementById('count').textContent=rows.length+' sor';
+}
+
+function renderNormal(rows) {
   var cols=COLS[TAB];
   document.getElementById('thead').innerHTML='<tr>'+cols.map(function(c){return'<th onclick="sort(\''+c.k+'\')">'+c.l+'</th>';}).join('')+'</tr>';
-  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+cols.length+'"><div class="empty">Nincs találat.</div></td></tr>';document.getElementById('count').textContent='';return;}
+  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+cols.length+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
   document.getElementById('tbody').innerHTML=rows.map(function(r){
     var ri=ROWS.indexOf(r);
-    return '<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
+    return '<tr onclick="openModal('+ri+')">'
       +cols.map(function(c){
         var v=r[c.k]||'';
         if(c.k==='hely') v=hbadge(v);
@@ -251,7 +325,23 @@ function render() {
         return '<td title="'+(r[c.k]||'')+'">'+v+'</td>';
       }).join('')+'</tr>';
   }).join('');
-  document.getElementById('count').textContent=rows.length+' sor';
+}
+
+function renderStatus(rows) {
+  var hdr='<tr><th>Művész</th><th>Helyszín</th>';
+  STATUS_COLS.forEach(function(c){hdr+='<th>'+c.l+'</th>';});
+  hdr+='</tr>';
+  document.getElementById('thead').innerHTML=hdr;
+  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+(STATUS_COLS.length+2)+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
+  document.getElementById('tbody').innerHTML=rows.map(function(r){
+    var ri=ROWS.indexOf(r);
+    var cells='<td onclick="openModal('+ri+')" title="'+r.muv+'" style="cursor:pointer;max-width:180px;overflow:hidden;text-overflow:ellipsis">'+r.muv+'</td>';
+    cells+='<td>'+hbadge(r.hely)+'</td>';
+    STATUS_COLS.forEach(function(c){
+      cells+='<td>'+cellStatus(r[c.k])+'</td>';
+    });
+    return '<tr>'+cells+'</tr>';
+  }).join('');
 }
 
 function sort(k) { if(SK===k)SD*=-1;else{SK=k;SD=1;} render(); }
