@@ -17,7 +17,7 @@ button{padding:6px 12px;border:1px solid #ccc;border-radius:6px;background:#fff;
 .filters{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
 input,select{padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px}
 input{min-width:180px}
-.col-toggle-btn{padding:7px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;gap:5px}
+.col-toggle-btn{padding:7px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;font-size:13px;cursor:pointer}
 .col-toggle-btn.open{background:#222;color:#fff;border-color:#222}
 .col-panel{display:none;background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:10px;column-count:3;column-gap:10px}
 .col-panel.open{display:block}
@@ -110,22 +110,11 @@ tr.ures td{color:#bbb;font-style:italic}
   </div>
 </div>
 <script>
-var ROWS=[], TAB='all', SK=null, SD=1;
+var ROWS=[],TAB='all',SK=null,SD=1;
 var SID='1TU1LasWxZE2wuFUsAXq9hEzyAIym3BDIUnVTmwG18OQ';
 var ALL_HEADERS=[];
 var DEFAULT_COLS={
   all:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62],
-  todo:[0,1,2,4,8],
-  money:[0,1,2,4,50,51,52,53,54,55,56,57,58,59,60,61,62,64,65,66],
-  cater:[0,1,2,3,4,5,7,9,10,11,12,13,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45],
-  tech:[0,1,2,3,4,5,6,7,9,10,11,12,13,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,46],
-  szallas:[0,1,2,3,4,5,6,7,9,10,11,12,13,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,44],
-  arculat:[0,1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,23,24,26,27,28,29,30,31,32,33,34,35,45],
-  eniko:[0,1,2,3,4,5,42,43,44,45,49],
-  lilla:[0,1,2],
-  adrien:[0,1,2,51]
-};
- all:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62],
   todo:[0,1,2,4,8],
   money:[0,1,2,4,50,51,52,53,54,55,56,57,58,59,60,61,62,64,65,66],
   cater:[0,1,2,3,4,5,7,9,10,11,12,13,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45],
@@ -144,7 +133,7 @@ var STATUS_COLS=[
   {k:29,l:'Visszaut.'},{k:30,l:'Visszaut. idő'},
   {k:31,l:'Check In'},{k:33,l:'Check Out'},
   {k:36,l:'Szobák'},{k:41,l:'Szálláslista'},
-  {k:44,l:'Veget/Allerg'},{k:45,l:'Playlist'},
+  {k:44,l:'Veget/Allerg'},{k:45,l:'Playlist'}
 ];
 function loadSavedCols(){
   Object.keys(DEFAULT_COLS).forEach(function(tab){
@@ -153,8 +142,12 @@ function loadSavedCols(){
   });
 }
 function saveCols(tab){
-  try{localStorage.setItem('kmn26_cols_'+tab,JSON.stringify(TAB_COLS[tab]));
-  var n=document.getElementById('saveNote');n.textContent='✓ Mentve';setTimeout(function(){n.textContent='';},2000);}catch(e){}
+  try{
+    localStorage.setItem('kmn26_cols_'+tab,JSON.stringify(TAB_COLS[tab]));
+    var n=document.getElementById('saveNote');
+    n.textContent='✓ Mentve';
+    setTimeout(function(){n.textContent='';},2000);
+  }catch(e){}
 }
 function parseCSV(text){
   var rows=[],row=[],cur='',q=false;
