@@ -50,6 +50,7 @@ tr.ures td{color:#bbb;font-style:italic}
 .mf{grid-column:1/-1}
 .ml{font-size:11px;color:#888;margin-bottom:3px}
 .mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.mv a{color:#0a4080;word-break:break-all}
 .todo{background:#fff8e8;border-radius:6px;padding:10px;color:#704000;font-size:13px;margin-bottom:15px;white-space:pre-wrap}
 .empty{text-align:center;padding:40px;color:#aaa}
 .legend{display:flex;gap:15px;font-size:12px;color:#666;margin-bottom:10px;flex-wrap:wrap}
@@ -183,6 +184,14 @@ function cellStatus(v){
   if(!v||v.trim()==='')return '<span class="ur">-</span>';
   if(isVarom(v))return '<span class="vr" title="'+v+'">⏳</span>';
   return '<span class="ok" title="'+v+'">✅</span>';
+}
+function makeLink(v){
+  if(!v)return'—';
+  var parts=v.split(/(\bhttps?:\/\/\S+)/g);
+  return parts.map(function(p){
+    if(/^https?:\/\//.test(p))return'<a href="'+p+'" target="_blank">'+p+'</a>';
+    return p;
+  }).join('');
 }
 function buildUzenet(r){
   var hianyzok=[];
@@ -343,12 +352,12 @@ function openModal(i){
   h+='<div class="mgrid">';
   var visCols=TAB_COLS[TAB]||[];
   visCols.forEach(function(ci){
-    if(ci<0)return;
     var lbl=ALL_HEADERS[ci]||'';
     if(!lbl)return;
     var v=r[ci]||'';
     var full=[8,13,18,19,20,21,22,23,24,40,41,42,43,44].indexOf(ci)>=0;
-    
+    var vhtml=v?makeLink(v):'—';
+    h+='<div class="'+(full?'mf':'')+'"><div class="ml">'+lbl+'</div><div class="mv">'+vhtml+'</div></div>';
   });
   h+='</div>';
   document.getElementById('mbody').innerHTML=h;
@@ -361,14 +370,7 @@ function copyUzenet(btn){
     setTimeout(function(){btn.textContent='📋 Másolás vágólapra';btn.classList.remove('copied');},2000);
   });
 }
-function makeLink(v){
-  if(!v)return'—';
-  var parts=v.split(/(\bhttps?:\/\/\S+)/g);
-  return parts.map(function(p){
-    if(p.match(/^https?:\/\//))return'<a href="'+p+'" target="_blank" style="color:#0a4080;word-break:break-all">'+p+'</a>';
-    return p;
-  }).join('');
-}document.getElementById('modal').classList.remove('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
 loadSavedCols();
 load();
 setInterval(load,60000);
