@@ -283,6 +283,7 @@ function render() {
     '<div class="stat"><div class="n" style="color:orange">'+td+'</div><div class="l">Teendő</div></div>';
   document.getElementById('legend').style.display=TAB==='status'?'flex':'none';
   document.getElementById('colToggleBtn').style.visibility=TAB==='status'?'hidden':'visible';
+document.getElementById('colToggleBtn').style.display=TAB==='status'?'none':'inline-flex';
   document.getElementById('maintable').className=TAB==='status'?'status-table':'';
   if(TAB==='status') renderStatus(rows);
   else renderNormal(rows);
