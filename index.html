@@ -103,8 +103,7 @@ function mapRows(grid) {
   var h=grid[0], ix={};
   for(var i=0;i<h.length;i++) {
     var l=na(h[i]).replace(/\s+/g,' ');
-    if(l.indexOf('muvesz')>=0||l.indexOf('egyuttes')>=0) ix.muv=i;
-    else if(l.indexOf('helyszin')>=0) ix.hely=i;
+if((l.indexOf('muvesz')>=0||l.indexOf('egyuttes')>=0)&&l.indexOf('szama')<0&&l.indexOf('fellepo')<0) ix.muv=i;    else if(l.indexOf('helyszin')>=0) ix.hely=i;
     else if(l.indexOf('datum')>=0) ix.dat=i;
     else if(l.indexOf('nap')===0) ix.nap=i;
     else if(l.indexOf('kezdesi')>=0) ix.t1=i;
