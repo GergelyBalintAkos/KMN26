@@ -47,7 +47,6 @@ tr.ures td{color:#bbb;font-style:italic}
 .mbox h3{font-size:16px;margin-bottom:5px}
 .mclose{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:#888}
 .mgrid{display:grid;grid-template-columns:1fr;gap:8px}
-.mf{grid-column:1/-1}
 .ml{font-size:11px;color:#888;margin-bottom:3px}
 .mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .mv a{color:#0a4080;word-break:break-all}
@@ -342,25 +341,24 @@ function openModal(i){
   document.getElementById('msub').textContent=(r[2]||'')+(r[3]?' · '+r[3]:'')+(r[4]?' · '+r[4]:'');
   var h='';
   if(r[8])h+='<div class="todo">'+r[8]+'</div>';
-  var uzenet=buildUzenet(r);
-  if(uzenet){
-    h+='<div class="uzenet-box"><h4>📨 Emlékeztető üzenet — másolható</h4>';
-    h+='<div class="uzenet-text">'+uzenet+'</div>';
-    h+='<button class="copy-btn" onclick="copyUzenet(this)">📋 Másolás vágólapra</button></div>';
-    h+='<hr class="divider">';
-  }
   h+='<div class="mgrid">';
   var visCols=TAB_COLS[TAB]||[];
   visCols.forEach(function(ci){
     var lbl=ALL_HEADERS[ci]||'';
     if(!lbl)return;
     var v=r[ci]||'';
-    var full=[8,13,18,19,20,21,22,23,24,40,41,42,43,44].indexOf(ci)>=0;
     if(v&&v.trim().toLowerCase()==='x')return;
-var vhtml=v?makeLink(v):'—';
-    h+='<div class="'+(full?'mf':'')+'"><div class="ml">'+lbl+'</div><div class="mv">'+vhtml+'</div></div>';
+    var vhtml=v?makeLink(v):'—';
+    h+='<div><div class="ml">'+lbl+'</div><div class="mv">'+vhtml+'</div></div>';
   });
   h+='</div>';
+  var uzenet=buildUzenet(r);
+  if(uzenet){
+    h+='<hr class="divider">';
+    h+='<div class="uzenet-box"><h4>📨 Emlékeztető üzenet — másolható</h4>';
+    h+='<div class="uzenet-text">'+uzenet+'</div>';
+    h+='<button class="copy-btn" onclick="copyUzenet(this)">📋 Másolás vágólapra</button></div>';
+  }
   document.getElementById('mbody').innerHTML=h;
   document.getElementById('modal').classList.add('open');
 }
