@@ -218,7 +218,7 @@ function render() {
     if(TAB==='todo'&&!r.helyzet&&!r.ures) return false;
     if(TAB==='money'&&!r.osszeg) return false;
     if(q&&Object.values(r).join(' ').toLowerCase().indexOf(q)<0) return false;
-    if(fh&&r.hely!==fh) return false;
+    if(fh&&r.hely.replace(/\n/g,' ').trim()!==fh.replace(/\n/g,' ').trim()) return false;
     if(fd&&r.dat!==fd) return false;
     return true;
   });
