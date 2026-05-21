@@ -314,7 +314,6 @@ function render() {
     '<div class="stat"><div class="n" style="color:green">'+k+'</div><div class="l">Kitöltve</div></div>'+
     '<div class="stat"><div class="n" style="color:red">'+u+'</div><div class="l">Üres</div></div>'+
     '<div class="stat"><div class="n" style="color:orange">'+td+'</div><div class="l">Teendő</div></div>'+
-    '<div class="stat"><div class="n" style="font-size:14px">'+sm.toLocaleString('hu-HU')+'</div><div class="l">Összeg HUF</div></div>';
   document.getElementById('legend').style.display=TAB==='status'?'flex':'none';
   document.getElementById('maintable').className=TAB==='status'?'status-table':'';
   if(TAB==='status') renderStatus(rows);
