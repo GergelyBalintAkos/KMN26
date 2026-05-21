@@ -95,24 +95,29 @@ function parseCSV(text) {
 }
 
 function na(s) {
-  return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[őűőű]/g,function(c){return c==='ő'||c==='Ő'?'o':'u';}).replace(/\n/g,' ').trim();
+  return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[őű]/g,function(c){return c==='ő'?'o':'u';}).replace(/\n/g,' ').trim().replace(/\s+/g,' ');
 }
 
 function mapRows(grid) {
   if(grid.length<2) return [];
   var h=grid[0], ix={};
-  for(var i=0;i<h.length;i++) {
-    var l=na(h[i]).replace(/\s+/g,' ');
-if((l.indexOf('muvesz')>=0||l.indexOf('egyuttes')>=0)&&l.indexOf('szama')<0&&l.indexOf('fellepo')<0) ix.muv=i;    else if(l.indexOf('helyszin')>=0) ix.hely=i;
-    else if(l.indexOf('datum')>=0) ix.dat=i;
-    else if(l.indexOf('nap')===0) ix.nap=i;
-    else if(l.indexOf('kezdesi')>=0) ix.t1=i;
-    else if(l.indexOf('jelenlegi')>=0||l.indexOf('feladatok')>=0) ix.helyzet=i;
-    else if(l.indexOf('elerhetoseg')>=0&&!ix.felelos) ix.felelos=i;
+
+  // Rögzített indexek - az első sor alapján
+  ix.muv=0;   // MŰVÉSZ / EGYÜTTES NEVE - mindig 0. oszlop
+  ix.hely=1;  // Helyszín - mindig 1. oszlop
+  ix.dat=2;   // Dátum - mindig 2. oszlop
+  ix.nap=3;   // Nap - mindig 3. oszlop
+  ix.t1=4;    // Kezdési idő - mindig 4. oszlop
+
+  // A többit keresés alapján
+  for(var i=5;i<h.length;i++) {
+    var l=na(h[i]);
+    if(l.indexOf('jelenlegi')>=0||l.indexOf('feladatok')>=0) ix.helyzet=i;
+    else if(l==='elerhetoseg') ix.felelos=i;
     else if(l.indexOf('funkcio')>=0) ix.funkcio=i;
     else if(l.indexOf('telefon')>=0) ix.tel=i;
     else if(l.indexOf('mail')>=0) ix.email=i;
-    else if(l.indexOf('osszeg')>=0) ix.osszeg=i;
+    else if(l==='osszeg') ix.osszeg=i;
     else if(l==='huf') ix.huf=i;
     else if(l==='ron') ix.ron=i;
     else if(l.indexOf('szolgaltato')>=0) ix.szolg=i;
@@ -124,10 +129,13 @@ if((l.indexOf('muvesz')>=0||l.indexOf('egyuttes')>=0)&&l.indexOf('szama')<0&&l.i
     else if(l.indexOf('rider')>=0) ix.rider=i;
     else if(l.indexOf('backstage')>=0) ix.back=i;
   }
+
   var res=[];
   for(var r=1;r<grid.length;r++) {
     var row=grid[r];
-    var muv=row[ix.muv]||'', hely=row[ix.hely]||'', dat=row[ix.dat]||'';
+    var muv=row[0]||'';
+    var hely=row[1]||'';
+    var dat=row[2]||'';
     if(!muv&&!hely&&!dat) continue;
     var pm=function(v){var m=String(v||'').replace(/[.\s]/g,'').match(/\d+/);return m?parseInt(m[0]):null;};
     res.push({
