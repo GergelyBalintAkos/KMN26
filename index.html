@@ -361,7 +361,14 @@ function copyUzenet(btn){
     setTimeout(function(){btn.textContent='📋 Másolás vágólapra';btn.classList.remove('copied');},2000);
   });
 }
-function closeModal(){document.getElementById('modal').classList.remove('open');}
+function makeLink(v){
+  if(!v)return'—';
+  var parts=v.split(/(\bhttps?:\/\/\S+)/g);
+  return parts.map(function(p){
+    if(p.match(/^https?:\/\//))return'<a href="'+p+'" target="_blank" style="color:#0a4080;word-break:break-all">'+p+'</a>';
+    return p;
+  }).join('');
+}document.getElementById('modal').classList.remove('open');}
 loadSavedCols();
 load();
 setInterval(load,60000);
