@@ -121,7 +121,8 @@ tr.ures td{color:#bbb;font-style:italic}
       <div class="modal-refresh" id="mrefresh"></div>
       <div class="modal-title" id="mtitle"></div>
     </div>
-    <div id="mbody"></div>
+    <button class="copy-btn" style="margin-bottom:10px" onclick="copyModal()">📋 Másolás vágólapra</button>
+<div id="mbody"></div>
   </div>
 </div>
 <script>
@@ -414,7 +415,26 @@ function copyUzenet(btn){
     setTimeout(function(){btn.textContent='📋 Másolás vágólapra';btn.classList.remove('copied');},2000);
   });
 }
-function closeModal(){document.getElementById('modal').classList.remove('open');}
+function copyModal(){
+  var lines=[];
+  lines.push('Kolozsvári Magyar Napok 2026');
+  lines.push(document.getElementById('msub').textContent);
+  lines.push('Frissítés dátuma: '+LAST_UPDATE);
+  lines.push('');
+  lines.push(document.getElementById('mtitle').textContent);
+  lines.push('');
+  var items=document.getElementById('mbody').querySelectorAll('.ml,.mv,.alcim,.todo');
+  items.forEach(function(el){
+    if(el.classList.contains('alcim'))lines.push('\n--- '+el.textContent+' ---');
+    else if(el.classList.contains('todo'))lines.push('Teendő: '+el.textContent);
+    else lines.push(el.textContent);
+  });
+  navigator.clipboard.writeText(lines.join('\n')).then(function(){
+    var btn=document.querySelector('.mbox .copy-btn');
+    btn.textContent='✅ Másolva!';
+    setTimeout(function(){btn.textContent='📋 Másolás vágólapra';},2000);
+  });
+}
 loadSavedCols();
 load();
 setInterval(load,60000);
