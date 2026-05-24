@@ -93,6 +93,8 @@ tr.ures td{color:#bbb;font-style:italic}
   <button class="tab" onclick="setTab('eniko',this)">Enikő</button>
   <button class="tab" onclick="setTab('lilla',this)">Lilla</button>
   <button class="tab" onclick="setTab('adrien',this)">Adrien</button>
+  <button class="tab" onclick="setTab('muvesz',this)">🎤 Művész</button>
+  <button class="tab" onclick="setTab('muveszpenz',this)">🎤💰 Művész+pénzügy</button>
 </div>
 <div class="filters">
   <input type="text" id="q" placeholder="Keresés..." oninput="render()">
@@ -138,7 +140,9 @@ var DEFAULT_COLS={
   arculat:[0,1,2,14,15,17,18,27,28,50,51],
   eniko:[0,1,2,3,4,54],
   lilla:[0,1,2],
-  adrien:[0,1,2,52]
+  adrien:[0,1,2,52],
+  muvesz:[0,1,2,3,4,8,9,10,11,12,13,14,17,20,24,27,29,30,31,50],
+  muveszpenz:[0,1,2,3,4,8,9,10,11,12,13,14,17,20,24,27,29,30,31,50,55,56,57,58,59,62,66,67,68]
 };
 var TAB_COLS={};
 var STATUS_COLS=[
