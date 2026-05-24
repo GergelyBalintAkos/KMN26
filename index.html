@@ -407,7 +407,8 @@ function openModal(i){
     var vhtml=renderCellValue(v);
     var mvCls=getMvClass(v);
     var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
-    h+='<div><div class="ml">'+lbl+'</div><div class="mv '+(mvCls)+'">'+vhtml+linkHtml+'</div></div>';
+    var bold=ci===0?'font-weight:600;':'';
+h+='<div><div class="ml">'+lbl+'</div><div class="mv '+(mvCls)+'" style="'+bold+'">'+vhtml+linkHtml+'</div></div>';
   });
   h+='</div>';
   document.getElementById('mbody').innerHTML=h;
