@@ -128,20 +128,6 @@ var SID='1TU1LasWxZE2wuFUsAXq9hEzyAIym3BDIUnVTmwG18OQ';
 var ALL_HEADERS=[];
 var LAST_UPDATE='';
 var LINK_COLS={};
-function buildLinkCols(){
-  LINK_COLS={};
-  ALL_HEADERS.forEach(function(h,i){
-    if(!h)return;
-    if(h.toLowerCase().indexOf('link')>=0){
-      for(var j=i-1;j>=0;j--){
-        if(ALL_HEADERS[j]&&ALL_HEADERS[j].toLowerCase().indexOf('link')<0){
-          LINK_COLS[j]=i;
-          break;
-        }
-      }
-    }
-  });
-}
 var DEFAULT_COLS={
   all:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,19,20,22,23,24,26,27,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,52,53,54,55,56,57,58,59,60,61,62,64,65,66,67,68],
   todo:[0,1,2,4,8],
@@ -157,6 +143,20 @@ var DEFAULT_COLS={
   muveszpenz:[0,1,2,3,4,8,9,10,11,12,13,14,17,20,24,27,29,30,31,50,55,56,57,58,59,62,66,67,68]
 };
 var TAB_COLS={};
+function buildLinkCols(){
+  LINK_COLS={};
+  ALL_HEADERS.forEach(function(h,i){
+    if(!h)return;
+    if(h.toLowerCase().indexOf('link')>=0){
+      for(var j=i-1;j>=0;j--){
+        if(ALL_HEADERS[j]&&ALL_HEADERS[j].toLowerCase().indexOf('link')<0){
+          LINK_COLS[j]=i;
+          break;
+        }
+      }
+    }
+  });
+}
 function loadSavedCols(){
   Object.keys(DEFAULT_COLS).forEach(function(tab){
     try{var s=localStorage.getItem('kmn26_cols_'+tab);TAB_COLS[tab]=s?JSON.parse(s):DEFAULT_COLS[tab].slice();}
@@ -261,6 +261,7 @@ function load(){
       ROWS=mapRows(parseCSV(t));
       LAST_UPDATE=new Date().toLocaleString('hu-HU');
       document.getElementById('info').textContent='Frissítve: '+LAST_UPDATE+' ('+ROWS.length+' sor)';
+      buildLinkCols();
       buildSelects();buildColPanel();render();
     })
     .catch(function(e){document.getElementById('info').textContent='Hiba: '+e.message;});
@@ -345,7 +346,7 @@ function render(){
 }
 function renderNormal(rows){
   var cols=TAB_COLS[TAB]||[0,1,2];
-  var linkColVals=Object.keys(LINK_COLS).map(function(k){return LINK_COLS[k];});
+  var linkColVals=Object.values(LINK_COLS);
   var visCols=cols.filter(function(c){return linkColVals.indexOf(c)<0;});
   document.getElementById('thead').innerHTML='<tr><th style="width:32px;min-width:32px"></th>'+visCols.map(function(i){
     return'<th onclick="sort('+i+')" title="'+ALL_HEADERS[i]+'">'+ALL_HEADERS[i]+'</th>';
@@ -406,7 +407,7 @@ function openModal(i){
   var h='';
   var visCols=TAB_COLS[TAB]||[];
   h+='<div class="mgrid">';
-  var linkColVals=Object.keys(LINK_COLS).map(function(k){return LINK_COLS[k];});
+  var linkColVals=Object.values(LINK_COLS);
   visCols.forEach(function(ci){
     if(linkColVals.indexOf(ci)>=0)return;
     var lbl=ALL_HEADERS[ci]||'';
@@ -448,9 +449,6 @@ function copyModal(){
 function printModal(){
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>';
   html+='body{font-family:sans-serif;padding:20px;font-size:13px;line-height:1.5;color:#222}';
-  html+='h2{font-size:15px;margin-bottom:4px}';
-  html+='.sub{font-size:12px;color:#888;margin-bottom:2px}';
-  html+='.refresh{font-size:11px;color:#aaa;margin-bottom:15px}';
   html+='.ml{font-size:11px;color:#888;margin-bottom:2px;margin-top:8px}';
   html+='.mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}';
   html+='.mv-varom{background:#ffeaea;border-radius:4px;padding:2px 6px}';
@@ -462,7 +460,7 @@ function printModal(){
   html+='hr{border:none;border-top:1px solid #eee;margin:15px 0}';
   html+='</style></head><body>';
   html+='<p style="font-size:11px;color:#888;margin-bottom:2px">Kolozsvári Magyar Napok 2026</p>';
-  html+='<p style="font-size:12px;color:#888;margin-bottom:2px;font-weight:600">'+document.getElementById('msub').textContent+'</p>';
+  html+='<p style="font-size:12px;font-weight:600;margin-bottom:2px">'+document.getElementById('msub').textContent+'</p>';
   html+='<p style="font-size:11px;color:#aaa;margin-bottom:15px">'+document.getElementById('mrefresh').textContent+'</p>';
   html+='<hr>';
   html+=document.getElementById('mbody').innerHTML;
