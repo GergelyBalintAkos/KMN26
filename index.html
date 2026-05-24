@@ -66,9 +66,8 @@ tr.ures td{color:#bbb;font-style:italic}
 .alcim{font-weight:500;font-size:11px;color:#888;margin-top:12px;padding-top:8px;border-top:1px solid #eee;text-transform:uppercase;letter-spacing:0.5px}
 .modal-header{margin-bottom:15px}
 .modal-brand{font-size:11px;color:#888;margin-bottom:2px}
-.modal-sub{font-size:12px;color:#888;margin-bottom:2px}
+.modal-sub{font-size:12px;color:#888;margin-bottom:2px;font-weight:600}
 .modal-refresh{font-size:11px;color:#aaa;margin-bottom:12px}
-.modal-title{font-size:16px;font-weight:500;margin-top:12px}
 </style>
 </head>
 <body>
@@ -230,8 +229,8 @@ function buildUzenet(r){
   });
   if(hianyzok.length===0)return null;
   var nev=(r[9]||'').split('\n')[0].trim();
-if(!nev||nev.toLowerCase()==='alcím')nev=(r[10]||'').split('\n')[0].trim();
-if(!nev||nev.toLowerCase()==='alcím')nev='';(r[9]||'').split('\n')[0].trim();
+  if(!nev||nev.toLowerCase()==='alcím')nev=(r[10]||'').split('\n')[0].trim();
+  if(!nev||nev.toLowerCase()==='alcím')nev='';
   var s='Kedves '+(nev||r[0])+'!\n\n';
   s+='Kérem küldje el az alábbiakat a Kolozsvári Magyar Napok szervezéshez ('+r[2]+', '+r[1]+'):\n\n';
   s+=hianyzok.join('\n');
@@ -408,37 +407,24 @@ function openModal(i){
     var linkVal=linkCol!==undefined?r[linkCol]||'':'';
     var vhtml=renderCellValue(v);
     var mvCls=getMvClass(v);
-    var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
     var bold=ci===0?'font-weight:600;':'';
-h+='<div><div class="ml">'+lbl+'</div><div class="mv '+(mvCls)+'" style="'+bold+'">'+vhtml+linkHtml+'</div></div>';
+    var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
+    h+='<div><div class="ml">'+lbl+'</div><div class="mv '+mvCls+'" style="'+bold+'">'+vhtml+linkHtml+'</div></div>';
   });
   h+='</div>';
   document.getElementById('mbody').innerHTML=h;
   document.getElementById('modal').classList.add('open');
 }
 function copyModal(){
-  var lines=[];
-  lines.push('Kolozsvári Magyar Napok 2026');
-  lines.push(document.getElementById('msub').textContent);
-  lines.push(document.getElementById('mrefresh').textContent);
-  lines.push('');
-  var items=document.getElementById('mbody').querySelectorAll('.alcim,.ml,.mv');
-  var i=0;
-  while(i<items.length){
-    var el=items[i];
-    if(el.classList.contains('alcim')){
-      lines.push('');
-      lines.push('--- '+el.textContent+' ---');
-    } else if(el.classList.contains('ml')){
-      var label=el.textContent;
-      var next=items[i+1];
-      var val=next&&next.classList.contains('mv')?next.textContent:'';
-      if(val&&val!=='—')lines.push(label+': '+val);
-      i++;
-    }
-    i++;
-  }
-  navigator.clipboard.writeText(lines.join('\n')).then(function(){
+  var html=document.getElementById('mbody').innerHTML;
+  var header='<p><b>Kolozsvári Magyar Napok 2026</b><br>'+
+    document.getElementById('msub').textContent+'<br>'+
+    document.getElementById('mrefresh').textContent+'</p>';
+  var fullHtml=header+html;
+  var blob=new Blob([fullHtml],{type:'text/html'});
+  var textBlob=new Blob([document.getElementById('mbody').innerText],{type:'text/plain'});
+  var item=new ClipboardItem({'text/html':blob,'text/plain':textBlob});
+  navigator.clipboard.write([item]).then(function(){
     var btn=document.getElementById('copyModalBtn');
     btn.textContent='✅';
     setTimeout(function(){btn.textContent='📋';},2000);
