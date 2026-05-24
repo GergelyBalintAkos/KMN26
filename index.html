@@ -223,7 +223,7 @@ function renderCellValue(v){
 }
 function buildUzenet(r){
   var hianyzok=[];
-  STATUS_COLS.forEach(function(c){if(isVarom(r[c.k]))hianyzok.push('- '+c.l);});
+  ALL_HEADERS.forEach(function(lbl,ci){if(!lbl||lbl.indexOf('##')===0)return;if(isVarom(r[ci]))hianyzok.push('- '+lbl);});('- '+c.l);});
   if(hianyzok.length===0)return null;
   var nev=(r[9]||'').split('\n')[0].trim();
   var s='Kedves '+(nev||r[0])+'!\n\n';
