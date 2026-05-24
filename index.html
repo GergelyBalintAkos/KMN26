@@ -63,6 +63,8 @@ tr.ures td{color:#bbb;font-style:italic}
 .uzenet-text{background:#fff;border:1px solid #dde;border-radius:6px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap;color:#333;min-height:80px}
 .copy-btn{margin-top:10px;padding:8px 16px;background:#0a4080;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;width:100%}
 .copy-btn:hover{background:#0d5099}.copy-btn.copied{background:#3a8a3a}
+.copy-modal-btn{padding:8px 16px;background:#f1f1ef;color:#444;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:13px;width:100%;margin-bottom:12px;text-align:left}
+.copy-modal-btn:hover{background:#e8e8e5}
 .divider{border:none;border-top:1px solid #eee;margin:15px 0}
 .save-note{font-size:11px;color:#3a8a3a;margin-left:8px}
 .alcim{font-weight:500;font-size:11px;color:#888;margin-top:12px;padding-top:8px;border-top:1px solid #eee;text-transform:uppercase;letter-spacing:0.5px}
@@ -121,8 +123,8 @@ tr.ures td{color:#bbb;font-style:italic}
       <div class="modal-refresh" id="mrefresh"></div>
       <div class="modal-title" id="mtitle"></div>
     </div>
-    <button class="copy-btn" style="margin-bottom:10px" onclick="copyModal()">📋 Másolás vágólapra</button>
-<div id="mbody"></div>
+    <button class="copy-modal-btn" id="copyModalBtn" onclick="copyModal()">📋 Tartalom másolása vágólapra</button>
+    <div id="mbody"></div>
   </div>
 </div>
 <script>
@@ -408,6 +410,38 @@ function openModal(i){
   document.getElementById('mbody').innerHTML=h;
   document.getElementById('modal').classList.add('open');
 }
+function copyModal(){
+  var lines=[];
+  lines.push('Kolozsvári Magyar Napok 2026');
+  lines.push(document.getElementById('msub').textContent);
+  lines.push(document.getElementById('mrefresh').textContent);
+  lines.push('');
+  lines.push(document.getElementById('mtitle').textContent);
+  lines.push('');
+  var items=document.getElementById('mbody').querySelectorAll('.alcim,.todo,.ml,.mv');
+  var i=0;
+  while(i<items.length){
+    var el=items[i];
+    if(el.classList.contains('alcim')){
+      lines.push('');
+      lines.push('--- '+el.textContent+' ---');
+    } else if(el.classList.contains('todo')){
+      lines.push('Teendő: '+el.textContent);
+    } else if(el.classList.contains('ml')){
+      var label=el.textContent;
+      var next=items[i+1];
+      var val=next&&next.classList.contains('mv')?next.textContent:'';
+      if(val&&val!=='—')lines.push(label+': '+val);
+      i++;
+    }
+    i++;
+  }
+  navigator.clipboard.writeText(lines.join('\n')).then(function(){
+    var btn=document.getElementById('copyModalBtn');
+    btn.textContent='✅ Másolva!';
+    setTimeout(function(){btn.textContent='📋 Tartalom másolása vágólapra';},2000);
+  });
+}
 function copyUzenet(btn){
   var text=btn.previousElementSibling.textContent;
   navigator.clipboard.writeText(text).then(function(){
@@ -415,26 +449,7 @@ function copyUzenet(btn){
     setTimeout(function(){btn.textContent='📋 Másolás vágólapra';btn.classList.remove('copied');},2000);
   });
 }
-function copyModal(){
-  var lines=[];
-  lines.push('Kolozsvári Magyar Napok 2026');
-  lines.push(document.getElementById('msub').textContent);
-  lines.push('Frissítés dátuma: '+LAST_UPDATE);
-  lines.push('');
-  lines.push(document.getElementById('mtitle').textContent);
-  lines.push('');
-  var items=document.getElementById('mbody').querySelectorAll('.ml,.mv,.alcim,.todo');
-  items.forEach(function(el){
-    if(el.classList.contains('alcim'))lines.push('\n--- '+el.textContent+' ---');
-    else if(el.classList.contains('todo'))lines.push('Teendő: '+el.textContent);
-    else lines.push(el.textContent);
-  });
-  navigator.clipboard.writeText(lines.join('\n')).then(function(){
-    var btn=document.querySelector('.mbox .copy-btn');
-    btn.textContent='✅ Másolva!';
-    setTimeout(function(){btn.textContent='📋 Másolás vágólapra';},2000);
-  });
-}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
 loadSavedCols();
 load();
 setInterval(load,60000);
