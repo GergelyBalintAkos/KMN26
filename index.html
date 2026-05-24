@@ -437,7 +437,7 @@ function copyModal(){
   navigator.clipboard.writeText(lines.join('\n')).then(function(){
     var btn=document.getElementById('copyModalBtn');
     btn.textContent='✅ Másolva!';
-    setTimeout(function(){btn.textContent='📋 Tartalom másolása vágólapra';},2000);
+    setTimeout(function(){btn.textContent='📋';},2000);
   });
 }
 function copyUzenet(btn){
