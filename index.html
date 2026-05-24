@@ -54,7 +54,6 @@ tr.ures td{color:#bbb;font-style:italic}
 .mv-table tr:first-child td{background:#f5f5f3;font-weight:500}
 .link-btn{display:inline-block;padding:4px 10px;background:#e8f0fe;color:#0a4080;border-radius:6px;font-size:12px;text-decoration:none;margin-top:4px}
 .link-btn:hover{background:#d0e2ff}
-.todo{background:#fff8e8;border-radius:6px;padding:10px;color:#704000;font-size:13px;margin-bottom:15px;white-space:pre-wrap}
 .empty{text-align:center;padding:40px;color:#aaa}
 .legend{display:flex;gap:15px;font-size:12px;color:#666;margin-bottom:10px;flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:4px}
@@ -115,13 +114,13 @@ tr.ures td{color:#bbb;font-style:italic}
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="mbox">
     <button class="mclose" onclick="closeModal()">×</button>
+    <button id="copyModalBtn" onclick="copyModal()" title="Másolás" style="position:absolute;top:12px;right:55px;background:none;border:none;cursor:pointer;font-size:16px;color:#bbb;padding:2px">📋</button>
     <div class="modal-header">
       <div class="modal-brand">Kolozsvári Magyar Napok 2026</div>
       <div class="modal-sub" id="msub"></div>
       <div class="modal-refresh" id="mrefresh"></div>
       <div class="modal-title" id="mtitle"></div>
     </div>
-    <button id="copyModalBtn" onclick="copyModal()" title="Másolás vágólapra" style="position:absolute;top:12px;right:55px;background:none;border:1px solid #ddd;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:13px;color:#888">📋</button>
     <div id="mbody"></div>
   </div>
 </div>
@@ -330,13 +329,12 @@ function renderNormal(rows){
   var visCols=cols.filter(function(c){return linkColVals.indexOf(c)<0;});
   document.getElementById('thead').innerHTML='<tr>'+visCols.map(function(i){
     return'<th onclick="sort('+i+')" title="'+ALL_HEADERS[i]+'">'+ALL_HEADERS[i]+'</th>';
-}).join('')+'<th></th>
-  }).join('')+'</tr>';
-  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+visCols.length+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
+  }).join('')+'<th></th></tr>';
+  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+(visCols.length+1)+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
   document.getElementById('tbody').innerHTML=rows.map(function(r){
     var ri=ROWS.indexOf(r);
-    var uzenetGomb=buildUzenet(r)?'<td><button onclick="event.stopPropagation();copyUzenetRow('+ri+')" title="Emlékeztető másolása" style="background:none;border:none;cursor:pointer;font-size:13px;color:#888">✉️</button></td>':'<td></td>';
-return'<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
+    var uzenetGomb=buildUzenet(r)?'<td><button onclick="event.stopPropagation();copyUzenetRow('+ri+')" title="Emlékeztető másolása" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px">✉️</button></td>':'<td></td>';
+    return'<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
       +visCols.map(function(ci){
         var v=r[ci]||'';
         if(ci===1)v=hbadge(v);
@@ -346,7 +344,7 @@ return'<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
         var linkCol=LINK_COLS[ci];
         if(linkCol!==undefined&&r[linkCol])v=v+' <a href="'+r[linkCol]+'" target="_blank" onclick="event.stopPropagation()" style="color:#0a4080;font-size:11px">🔗</a>';
         return'<td title="'+String(r[ci]||'').replace(/"/g,'&quot;')+'">'+v+'</td>';
-      }).join('')+'</tr>';
+      }).join('')+uzenetGomb+'</tr>';
   }).join('');
 }
 function renderStatus(rows){
@@ -399,13 +397,6 @@ function openModal(i){
     h+='<div><div class="ml">'+lbl+'</div><div class="mv">'+vhtml+linkHtml+'</div></div>';
   });
   h+='</div>';
-  var uzenet=buildUzenet(r);
-  if(uzenet){
-    h+='<hr class="divider">';
-    h+='<div class="uzenet-box"><h4>📨 Emlékeztető üzenet — másolható</h4>';
-    h+='<div class="uzenet-text">'+uzenet+'</div>';
-    h+='<button class="copy-btn" onclick="copyUzenet(this)">📋 Másolás vágólapra</button></div>';
-  }
   document.getElementById('mbody').innerHTML=h;
   document.getElementById('modal').classList.add('open');
 }
@@ -417,15 +408,13 @@ function copyModal(){
   lines.push('');
   lines.push(document.getElementById('mtitle').textContent);
   lines.push('');
-  var items=document.getElementById('mbody').querySelectorAll('.alcim,.todo,.ml,.mv');
+  var items=document.getElementById('mbody').querySelectorAll('.alcim,.ml,.mv');
   var i=0;
   while(i<items.length){
     var el=items[i];
     if(el.classList.contains('alcim')){
       lines.push('');
       lines.push('--- '+el.textContent+' ---');
-    } else if(el.classList.contains('todo')){
-      lines.push('Teendő: '+el.textContent);
     } else if(el.classList.contains('ml')){
       var label=el.textContent;
       var next=items[i+1];
@@ -437,15 +426,8 @@ function copyModal(){
   }
   navigator.clipboard.writeText(lines.join('\n')).then(function(){
     var btn=document.getElementById('copyModalBtn');
-    btn.textContent='✅ Másolva!';
+    btn.textContent='✅';
     setTimeout(function(){btn.textContent='📋';},2000);
-  });
-}
-function copyUzenet(btn){
-  var text=btn.previousElementSibling.textContent;
-  navigator.clipboard.writeText(text).then(function(){
-    btn.textContent='✅ Másolva!';btn.classList.add('copied');
-    setTimeout(function(){btn.textContent='📋 Másolás vágólapra';btn.classList.remove('copied');},2000);
   });
 }
 function copyUzenetRow(i){
@@ -455,7 +437,8 @@ function copyUzenetRow(i){
   navigator.clipboard.writeText(uzenet).then(function(){
     alert('✅ Emlékeztető másolva!');
   });
-}document.getElementById('modal').classList.remove('open');}
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
 loadSavedCols();
 load();
 setInterval(load,60000);
