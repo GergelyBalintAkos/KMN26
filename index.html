@@ -393,8 +393,9 @@ function openModal(i){
     var linkCol=LINK_COLS[ci];
     var linkVal=linkCol!==undefined?r[linkCol]||'':'';
     var vhtml=renderCellValue(v);
+var varomStyle=isVarom(v)?'background:#fff8e8;border-radius:4px;padding:2px 6px;':'';
     var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
-    h+='<div><div class="ml">'+lbl+'</div><div class="mv">'+vhtml+linkHtml+'</div></div>';
+    h+='<div><div class="ml">'+lbl+'</div><div class="mv" style="'+varomStyle+'">'+vhtml+linkHtml+'</div></div>';
   });
   h+='</div>';
   document.getElementById('mbody').innerHTML=h;
