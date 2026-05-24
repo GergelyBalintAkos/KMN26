@@ -118,7 +118,6 @@ tr.ures td{color:#bbb;font-style:italic}
       <div class="modal-brand">Kolozsvári Magyar Napok 2026</div>
       <div class="modal-sub" id="msub"></div>
       <div class="modal-refresh" id="mrefresh"></div>
-      <div class="modal-title" id="mtitle"></div>
     </div>
     <div id="mbody"></div>
   </div>
@@ -386,7 +385,6 @@ function setTab(t,btn){
 }
 function openModal(i){
   var r=ROWS[i];
-  document.getElementById('mtitle').innerHTML=r[0]+' '+hbadge(r[1]);
   document.getElementById('msub').textContent=(r[2]||'')+(r[3]?' · '+r[3]:'')+(r[4]?' · '+r[4]:'');
   document.getElementById('mrefresh').textContent='Frissítés dátuma: '+LAST_UPDATE;
   var h='';
