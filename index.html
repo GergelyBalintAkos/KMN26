@@ -43,7 +43,7 @@ tr.ures td{color:#bbb;font-style:italic}
 .status-table td:nth-child(2){text-align:left;font-size:12px;white-space:nowrap;min-width:100px}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;justify-content:center;align-items:flex-start;padding-top:40px}
 .modal.open{display:flex}
-.mbox{background:#fff;border-radius:10px;width:90%;max-width:620px;max-height:85vh;overflow-y:auto;padding:20px}
+.mbox{background:#fff;border-radius:10px;width:90%;max-width:620px;max-height:85vh;overflow-y:auto;padding:20px;position:relative}
 .mclose{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:#888}
 .mgrid{display:grid;grid-template-columns:1fr;gap:8px}
 .ml{font-size:11px;color:#888;margin-bottom:3px}
@@ -123,7 +123,7 @@ tr.ures td{color:#bbb;font-style:italic}
       <div class="modal-refresh" id="mrefresh"></div>
       <div class="modal-title" id="mtitle"></div>
     </div>
-    <button class="copy-modal-btn" id="copyModalBtn" onclick="copyModal()">📋 Tartalom másolása vágólapra</button>
+    <button id="copyModalBtn" onclick="copyModal()" title="Másolás vágólapra" style="position:absolute;top:12px;right:40px;background:none;border:1px solid #ddd;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:13px;color:#888">📋</button>
     <div id="mbody"></div>
   </div>
 </div>
