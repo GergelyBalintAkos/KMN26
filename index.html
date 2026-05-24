@@ -113,6 +113,7 @@ tr.ures td{color:#bbb;font-style:italic}
   <div class="mbox">
     <button class="mclose" onclick="closeModal()">×</button>
     <button id="copyModalBtn" onclick="copyModal()" title="Másolás" style="position:absolute;top:12px;right:55px;background:none;border:none;cursor:pointer;font-size:16px;color:#bbb;padding:2px">📋</button>
+    <button onclick="printModal()" title="PDF / Nyomtatás" style="position:absolute;top:12px;right:80px;background:none;border:none;cursor:pointer;font-size:16px;color:#bbb;padding:2px">🖨️</button>
     <div class="modal-header">
       <div class="modal-brand">Kolozsvári Magyar Napok 2026</div>
       <div class="modal-sub" id="msub"></div>
@@ -429,6 +430,33 @@ function copyModal(){
     btn.textContent='✅';
     setTimeout(function(){btn.textContent='📋';},2000);
   });
+}
+function printModal(){
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>';
+  html+='body{font-family:sans-serif;padding:20px;font-size:13px;line-height:1.5;color:#222}';
+  html+='h2{font-size:15px;margin-bottom:4px}';
+  html+='.sub{font-size:12px;color:#888;margin-bottom:2px}';
+  html+='.refresh{font-size:11px;color:#aaa;margin-bottom:15px}';
+  html+='.ml{font-size:11px;color:#888;margin-bottom:2px;margin-top:8px}';
+  html+='.mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}';
+  html+='.mv-varom{background:#ffeaea;border-radius:4px;padding:2px 6px}';
+  html+='.mv-tba{background:#fff8e8;border-radius:4px;padding:2px 6px}';
+  html+='.alcim{font-weight:500;font-size:11px;color:#888;margin-top:15px;padding-top:8px;border-top:1px solid #eee;text-transform:uppercase;letter-spacing:0.5px}';
+  html+='.link-btn{display:none}';
+  html+='table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}';
+  html+='td{padding:4px 8px;border:1px solid #eee;vertical-align:top}';
+  html+='hr{border:none;border-top:1px solid #eee;margin:15px 0}';
+  html+='</style></head><body>';
+  html+='<p style="font-size:11px;color:#888;margin-bottom:2px">Kolozsvári Magyar Napok 2026</p>';
+  html+='<p style="font-size:12px;color:#888;margin-bottom:2px;font-weight:600">'+document.getElementById('msub').textContent+'</p>';
+  html+='<p style="font-size:11px;color:#aaa;margin-bottom:15px">'+document.getElementById('mrefresh').textContent+'</p>';
+  html+='<hr>';
+  html+=document.getElementById('mbody').innerHTML;
+  html+='</body></html>';
+  var w=window.open('','_blank','width=700,height=800');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();},500);
 }
 function copyUzenetRow(i){
   var r=ROWS[i];
