@@ -64,6 +64,7 @@ tr.ures td{color:#bbb;font-style:italic}
 .msub{font-size:12px;color:#888;margin-bottom:15px}
 .divider{border:none;border-top:1px solid #eee;margin:15px 0}
 .save-note{font-size:11px;color:#3a8a3a;margin-left:8px}
+.alcim{font-weight:600;font-size:13px;color:#222;margin-top:10px;padding-top:8px;border-top:1px solid #eee}
 </style>
 </head>
 <body>
@@ -115,10 +116,7 @@ tr.ures td{color:#bbb;font-style:italic}
 var ROWS=[],TAB='all',SK=null,SD=1;
 var SID='1TU1LasWxZE2wuFUsAXq9hEzyAIym3BDIUnVTmwG18OQ';
 var ALL_HEADERS=[];
-
-// Link oszlopok: melyik oszlophoz melyik link oszlop tartozik
 var LINK_COLS={14:15,17:18,20:21,24:25,27:28,50:51,62:63};
-
 var DEFAULT_COLS={
   all:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,19,20,22,23,24,26,27,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,52,53,54,55,56,57,58,59,60,61,62,64,65,66,67,68],
   todo:[0,1,2,4,8],
@@ -302,7 +300,6 @@ function render(){
 }
 function renderNormal(rows){
   var cols=TAB_COLS[TAB]||[0,1,2];
-  // Link oszlopokat kizárjuk a táblázatból
   var linkColVals=Object.keys(LINK_COLS).map(function(k){return LINK_COLS[k];});
   var visCols=cols.filter(function(c){return linkColVals.indexOf(c)<0;});
   document.getElementById('thead').innerHTML='<tr>'+visCols.map(function(i){
@@ -318,9 +315,8 @@ function renderNormal(rows){
         else if(ci===8)v=sbadge(v,r.ures)+(v?' <span style="font-size:12px;color:#888">'+v.slice(0,40)+(v.length>40?'…':'')+'</span>':'');
         else if(ci===56||ci===57)v=fmt(v);
         else if([45,46,47,48,49].indexOf(ci)>=0&&v)v='✓';
-var linkCol=LINK_COLS[ci];
-if(linkCol!==undefined&&r[linkCol])v=v+' <a href="'+r[linkCol]+'" target="_blank" onclick="event.stopPropagation()" style="color:#0a4080;font-size:11px">🔗</a>';
-        
+        var linkCol=LINK_COLS[ci];
+        if(linkCol!==undefined&&r[linkCol])v=v+' <a href="'+r[linkCol]+'" target="_blank" onclick="event.stopPropagation()" style="color:#0a4080;font-size:11px">🔗</a>';
         return'<td title="'+String(r[ci]||'').replace(/"/g,'&quot;')+'">'+v+'</td>';
       }).join('')+'</tr>';
   }).join('');
@@ -358,15 +354,16 @@ function openModal(i){
   var visCols=TAB_COLS[TAB]||[];
   var linkColVals=Object.keys(LINK_COLS).map(function(k){return LINK_COLS[k];});
   visCols.forEach(function(ci){
-    // Link oszlopokat kihagyjuk — beolvadnak a szülő oszlopba
     if(linkColVals.indexOf(ci)>=0)return;
     var lbl=ALL_HEADERS[ci]||'';
     if(!lbl)return;
     var v=r[ci]||'';
-    if(v&&v.trim().toLowerCase()==='x')return;
-var isAlcim=lbl.indexOf('##')===0;
-if(isAlcim){h+='<div style="font-weight:600;font-size:13px;color:#222;margin-top:10px;padding-top:8px;border-top:1px solid #eee">'+lbl.replace(/^##\s*/,'')+'</div>';return;}
-    // Van-e link oszlop ehhez?
+    if(v&&(v.trim().toLowerCase()==='x'||v.trim().toLowerCase()==='alcím'))return;
+    var isAlcim=lbl.indexOf('##')===0;
+    if(isAlcim){
+      h+='<div class="alcim">'+lbl.replace(/^##\s*/,'')+'</div>';
+      return;
+    }
     var linkCol=LINK_COLS[ci];
     var linkVal=linkCol!==undefined?r[linkCol]||'':'';
     var vhtml=v?v:'—';
