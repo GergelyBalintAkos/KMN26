@@ -230,7 +230,8 @@ function buildUzenet(r){
   });
   if(hianyzok.length===0)return null;
   var nev=(r[9]||'').split('\n')[0].trim();
-if(nev.toLowerCase()==='alcím')nev='';(r[9]||'').split('\n')[0].trim();
+if(!nev||nev.toLowerCase()==='alcím')nev=(r[10]||'').split('\n')[0].trim();
+if(!nev||nev.toLowerCase()==='alcím')nev='';(r[9]||'').split('\n')[0].trim();
   var s='Kedves '+(nev||r[0])+'!\n\n';
   s+='Kérem küldje el az alábbiakat a Kolozsvári Magyar Napok szervezéshez ('+r[2]+', '+r[1]+'):\n\n';
   s+=hianyzok.join('\n');
