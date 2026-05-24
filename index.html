@@ -334,7 +334,8 @@ function renderNormal(rows){
   if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+visCols.length+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
   document.getElementById('tbody').innerHTML=rows.map(function(r){
     var ri=ROWS.indexOf(r);
-    return'<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
+    var uzenetGomb=buildUzenet(r)?'<td><button onclick="event.stopPropagation();copyUzenetRow('+ri+')" title="Emlékeztető másolása" style="background:none;border:none;cursor:pointer;font-size:13px;color:#888">✉️</button></td>':'<td></td>';
+return'<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
       +visCols.map(function(ci){
         var v=r[ci]||'';
         if(ci===1)v=hbadge(v);
