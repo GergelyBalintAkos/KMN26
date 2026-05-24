@@ -364,6 +364,8 @@ function openModal(i){
     if(!lbl)return;
     var v=r[ci]||'';
     if(v&&v.trim().toLowerCase()==='x')return;
+var isAlcim=lbl.indexOf('##')===0;
+if(isAlcim){h+='<div style="font-weight:600;font-size:13px;color:#222;margin-top:10px;padding-top:8px;border-top:1px solid #eee">'+lbl.replace(/^##\s*/,'')+'</div>';return;}
     // Van-e link oszlop ehhez?
     var linkCol=LINK_COLS[ci];
     var linkVal=linkCol!==undefined?r[linkCol]||'':'';
