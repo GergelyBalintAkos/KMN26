@@ -377,7 +377,6 @@ function openModal(i){
   document.getElementById('mrefresh').textContent='Frissítés dátuma: '+LAST_UPDATE;
   var h='';
   var visCols=TAB_COLS[TAB]||[];
-  if(r[8]&&visCols.indexOf(8)>=0)h+='<div class="todo">'+r[8]+'</div>';
   h+='<div class="mgrid">';
   var linkColVals=Object.keys(LINK_COLS).map(function(k){return LINK_COLS[k];});
   visCols.forEach(function(ci){
