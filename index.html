@@ -327,7 +327,7 @@ function renderNormal(rows){
   var cols=TAB_COLS[TAB]||[0,1,2];
   var linkColVals=Object.keys(LINK_COLS).map(function(k){return LINK_COLS[k];});
   var visCols=cols.filter(function(c){return linkColVals.indexOf(c)<0;});
-  document.getElementById('thead').innerHTML='<tr><th style="width:32px"></th>'+visCols.map(function(i){
+  document.getElementById('thead').innerHTML='<tr><th style="width:32px;min-width:32px"></th>'+visCols.map(function(i){
     return'<th onclick="sort('+i+')" title="'+ALL_HEADERS[i]+'">'+ALL_HEADERS[i]+'</th>';
   }).join('')+'</tr>';
   if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+(visCols.length+1)+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
