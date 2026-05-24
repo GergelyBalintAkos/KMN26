@@ -368,7 +368,8 @@ function openModal(i){
   document.getElementById('msub').textContent=(r[2]||'')+(r[3]?' · '+r[3]:'')+(r[4]?' · '+r[4]:'');
   document.getElementById('mrefresh').textContent='Frissítés dátuma: '+LAST_UPDATE;
   var h='';
-  if(r[8])h+='<div class="todo">'+r[8]+'</div>';
+  var visCols8=TAB_COLS[TAB]||[];
+if(r[8]&&visCols8.indexOf(8)>=0)h+='<div class="todo">'+r[8]+'</div>';
   h+='<div class="mgrid">';
   var visCols=TAB_COLS[TAB]||[];
   var linkColVals=Object.keys(LINK_COLS).map(function(k){return LINK_COLS[k];});
