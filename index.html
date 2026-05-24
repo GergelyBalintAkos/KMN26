@@ -448,7 +448,14 @@ function copyUzenet(btn){
     setTimeout(function(){btn.textContent='📋 Másolás vágólapra';btn.classList.remove('copied');},2000);
   });
 }
-function closeModal(){document.getElementById('modal').classList.remove('open');}
+function copyUzenetRow(i){
+  var r=ROWS[i];
+  var uzenet=buildUzenet(r);
+  if(!uzenet)return;
+  navigator.clipboard.writeText(uzenet).then(function(){
+    alert('✅ Emlékeztető másolva!');
+  });
+}document.getElementById('modal').classList.remove('open');}
 loadSavedCols();
 load();
 setInterval(load,60000);
