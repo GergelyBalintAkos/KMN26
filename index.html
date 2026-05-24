@@ -49,6 +49,8 @@ tr.ures td{color:#bbb;font-style:italic}
 .ml{font-size:11px;color:#888;margin-bottom:3px}
 .mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .mv a{color:#0a4080;word-break:break-all}
+.mv-varom{background:#ffeaea;border-radius:4px;padding:2px 6px}
+.mv-tba{background:#fff8e8;border-radius:4px;padding:2px 6px}
 .mv-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
 .mv-table td{padding:4px 8px;border:1px solid #eee;vertical-align:top;white-space:normal}
 .mv-table tr:first-child td{background:#f5f5f3;font-weight:500}
@@ -181,10 +183,22 @@ function mapRows(grid){
   }
   return res;
 }
+function isTba(v){
+  if(!v||v.trim()==='')return false;
+  var l=v.trim().toLowerCase();
+  return l==='tba'||l==='tbc';
+}
 function isVarom(v){
   if(!v||v.trim()==='')return false;
   var l=v.toLowerCase();
-  return l==='tba'||l.indexOf('varom')>=0||l.indexOf('várom')>=0||l.indexOf('igerte')>=0||l.indexOf('ígérte')>=0||l.indexOf('varjuk')>=0||l.indexOf('várjuk')>=0;
+  if(isTba(v))return true;
+  return l.indexOf('varom')>=0||l.indexOf('várom')>=0||l.indexOf('igerte')>=0||l.indexOf('ígérte')>=0||l.indexOf('varjuk')>=0||l.indexOf('várjuk')>=0;
+}
+function getMvClass(v){
+  if(!v||v.trim()==='')return '';
+  if(isTba(v))return 'mv-tba';
+  if(isVarom(v))return 'mv-varom';
+  return '';
 }
 function cellStatus(v){
   if(!v||v.trim()==='')return '<span class="ur">-</span>';
@@ -339,7 +353,6 @@ function renderNormal(rows){
   }).join('');
 }
 function renderStatus(rows){
-  var hdr='<tr><th>Művész</th><th>Helyszín</th>';
   var STATUS_COLS=[
     {k:14,l:'Fotók'},{k:17,l:'Leírás'},{k:20,l:'Rider'},
     {k:29,l:'Járművek'},{k:30,l:'Stáb'},{k:31,l:'Fellépők'},
@@ -349,6 +362,7 @@ function renderStatus(rows){
     {k:40,l:'Szobák'},{k:42,l:'Szálláslista'},
     {k:44,l:'Veget/Allerg'},{k:50,l:'Playlist'}
   ];
+  var hdr='<tr><th>Művész</th><th>Helyszín</th>';
   STATUS_COLS.forEach(function(c){hdr+='<th>'+c.l+'</th>';});
   hdr+='</tr>';
   document.getElementById('thead').innerHTML=hdr;
@@ -393,9 +407,9 @@ function openModal(i){
     var linkCol=LINK_COLS[ci];
     var linkVal=linkCol!==undefined?r[linkCol]||'':'';
     var vhtml=renderCellValue(v);
-var varomStyle=isVarom(v)?'background:#fff8e8;border-radius:4px;padding:2px 6px;':'';
+    var mvCls=getMvClass(v);
     var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
-    h+='<div><div class="ml">'+lbl+'</div><div class="mv" style="'+varomStyle+'">'+vhtml+linkHtml+'</div></div>';
+    h+='<div><div class="ml">'+lbl+'</div><div class="mv '+(mvCls)+'">'+vhtml+linkHtml+'</div></div>';
   });
   h+='</div>';
   document.getElementById('mbody').innerHTML=h;
