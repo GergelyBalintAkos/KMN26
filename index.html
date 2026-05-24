@@ -57,9 +57,6 @@ tr.ures td{color:#bbb;font-style:italic}
 .empty{text-align:center;padding:40px;color:#aaa}
 .legend{display:flex;gap:15px;font-size:12px;color:#666;margin-bottom:10px;flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:4px}
-.uzenet-box{background:#f0f7ff;border:1px solid #b8d4f0;border-radius:8px;padding:15px;margin-top:15px}
-.uzenet-box h4{font-size:13px;color:#0a4080;margin-bottom:10px;font-weight:600}
-.uzenet-text{background:#fff;border:1px solid #dde;border-radius:6px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap;color:#333;min-height:80px}
 .copy-btn{margin-top:10px;padding:8px 16px;background:#0a4080;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;width:100%}
 .copy-btn:hover{background:#0d5099}.copy-btn.copied{background:#3a8a3a}
 .divider{border:none;border-top:1px solid #eee;margin:15px 0}
@@ -145,15 +142,6 @@ var DEFAULT_COLS={
   muveszpenz:[0,1,2,3,4,8,9,10,11,12,13,14,17,20,24,27,29,30,31,50,55,56,57,58,59,62,66,67,68]
 };
 var TAB_COLS={};
-var STATUS_COLS=[
-  {k:14,l:'Fotók'},{k:17,l:'Leírás'},{k:20,l:'Rider'},
-  {k:29,l:'Járművek'},{k:30,l:'Stáb'},{k:31,l:'Fellépők'},
-  {k:32,l:'Érk. dátum'},{k:33,l:'Érk. idő'},
-  {k:34,l:'Visszaut.'},{k:35,l:'Visszaut. idő'},
-  {k:36,l:'Check In'},{k:38,l:'Check Out'},
-  {k:40,l:'Szobák'},{k:42,l:'Szálláslista'},
-  {k:44,l:'Veget/Allerg'},{k:50,l:'Playlist'}
-];
 function loadSavedCols(){
   Object.keys(DEFAULT_COLS).forEach(function(tab){
     try{var s=localStorage.getItem('kmn26_cols_'+tab);TAB_COLS[tab]=s?JSON.parse(s):DEFAULT_COLS[tab].slice();}
@@ -223,7 +211,10 @@ function renderCellValue(v){
 }
 function buildUzenet(r){
   var hianyzok=[];
-  ALL_HEADERS.forEach(function(lbl,ci){if(!lbl||lbl.indexOf('##')===0)return;if(isVarom(r[ci]))hianyzok.push('- '+lbl);});('- '+c.l);});
+  ALL_HEADERS.forEach(function(lbl,ci){
+    if(!lbl||lbl.indexOf('##')===0)return;
+    if(isVarom(r[ci]))hianyzok.push('- '+lbl);
+  });
   if(hianyzok.length===0)return null;
   var nev=(r[9]||'').split('\n')[0].trim();
   var s='Kedves '+(nev||r[0])+'!\n\n';
@@ -349,6 +340,15 @@ function renderNormal(rows){
 }
 function renderStatus(rows){
   var hdr='<tr><th>Művész</th><th>Helyszín</th>';
+  var STATUS_COLS=[
+    {k:14,l:'Fotók'},{k:17,l:'Leírás'},{k:20,l:'Rider'},
+    {k:29,l:'Járművek'},{k:30,l:'Stáb'},{k:31,l:'Fellépők'},
+    {k:32,l:'Érk. dátum'},{k:33,l:'Érk. idő'},
+    {k:34,l:'Visszaut.'},{k:35,l:'Visszaut. idő'},
+    {k:36,l:'Check In'},{k:38,l:'Check Out'},
+    {k:40,l:'Szobák'},{k:42,l:'Szálláslista'},
+    {k:44,l:'Veget/Allerg'},{k:50,l:'Playlist'}
+  ];
   STATUS_COLS.forEach(function(c){hdr+='<th>'+c.l+'</th>';});
   hdr+='</tr>';
   document.getElementById('thead').innerHTML=hdr;
