@@ -49,10 +49,10 @@ tr.ures td{color:#bbb;font-style:italic}
 .mgrid{display:grid;grid-template-columns:1fr;gap:8px}
 .ml{font-size:11px;color:#888;margin-bottom:3px}
 .mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
-.mv-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
-.mv-table td{padding:4px 8px;border:1px solid #eee;vertical-align:top}
-.mv-table tr:first-child td{background:#f5f5f3;font-weight:500}
 .mv a{color:#0a4080;word-break:break-all}
+.mv-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.mv-table td{padding:4px 8px;border:1px solid #eee;vertical-align:top;white-space:normal}
+.mv-table tr:first-child td{background:#f5f5f3;font-weight:500}
 .link-btn{display:inline-block;padding:4px 10px;background:#e8f0fe;color:#0a4080;border-radius:6px;font-size:12px;text-decoration:none;margin-top:4px}
 .link-btn:hover{background:#d0e2ff}
 .todo{background:#fff8e8;border-radius:6px;padding:10px;color:#704000;font-size:13px;margin-bottom:15px;white-space:pre-wrap}
@@ -192,13 +192,22 @@ function cellStatus(v){
   return '<span class="ok" title="'+v+'">✅</span>';
 }
 function isLink(v){return v&&/^https?:\/\//.test(v.trim());}
-function makeLink(v){
+function renderCellValue(v){
   if(!v)return'—';
-  var parts=v.split(/(\bhttps?:\/\/\S+)/g);
-  return parts.map(function(p){
-    if(/^https?:\/\//.test(p))return'<a href="'+p+'" target="_blank" class="link-btn">🔗 Megnyitás</a>';
-    return p;
-  }).join('');
+  if(v.indexOf('|')<0)return v;
+  var lines=v.trim().split('\n');
+  var html='<table class="mv-table">';
+  lines.forEach(function(line){
+    if(!line.trim())return;
+    if(line.indexOf('|')>=0){
+      var cols=line.split('|');
+      html+='<tr>'+cols.map(function(c){return'<td>'+c.trim()+'</td>';}).join('')+'</tr>';
+    } else {
+      html+='<tr><td colspan="10" style="font-weight:500;background:#f9f9f7;padding:6px 8px">'+line.trim()+'</td></tr>';
+    }
+  });
+  html+='</table>';
+  return html;
 }
 function buildUzenet(r){
   var hianyzok=[];
@@ -369,7 +378,7 @@ function openModal(i){
     }
     var linkCol=LINK_COLS[ci];
     var linkVal=linkCol!==undefined?r[linkCol]||'':'';
-    var vhtml=v?renderCellValue(v):'—';
+    var vhtml=renderCellValue(v);
     var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
     h+='<div><div class="ml">'+lbl+'</div><div class="mv">'+vhtml+linkHtml+'</div></div>';
   });
@@ -391,25 +400,7 @@ function copyUzenet(btn){
     setTimeout(function(){btn.textContent='📋 Másolás vágólapra';btn.classList.remove('copied');},2000);
   });
 }
-function renderCellValue(v){
-  if(!v)return'—';
-  if(v.indexOf('|')<0)return v;
-  var rows=v.trim().split('\n');
-  var hasTable=rows.some(function(r){return r.indexOf('|')>=0;});
-  if(!hasTable)return v;
-  var html='<table class="mv-table">';
-  rows.forEach(function(row){
-    if(!row.trim())return;
-    if(row.indexOf('|')>=0){
-      var cols=row.split('|');
-      html+='<tr>'+cols.map(function(c){return'<td>'+c.trim()+'</td>';}).join('')+'</tr>';
-    } else {
-      html+='<tr><td colspan="10" style="font-weight:500;background:#f9f9f7">'+row.trim()+'</td></tr>';
-    }
-  });
-  html+='</table>';
-  return html;
-}document.getElementById('modal').classList.remove('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
 loadSavedCols();
 load();
 setInterval(load,60000);
