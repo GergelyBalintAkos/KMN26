@@ -220,6 +220,7 @@ function cellStatus(v){
   return '<span class="ok" title="'+v+'">✅</span>';
 }
 function isLink(v){return v&&/^https?:\/\//.test(v.trim());}
+  function highlightTba(v){if(!v)return v;return v.replace(/\b(TBA|TBC)\b/gi,function(m){return'<span class="mv-tba">'+m+'</span>';});}
 function renderCellValue(v){
   if(!v)return'—';
   if(v.indexOf('|')<0)return v;
@@ -417,7 +418,7 @@ function openModal(i){
     var mvCls=getMvClass(v);
     var bold=ci===0?'font-weight:600;font-size:14px;':'';
     var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
-    var valHtml=mvCls?'<span class="'+mvCls+'">'+vhtml+'</span>':vhtml;
+   var valHtml=mvCls?'<span class="'+mvCls+'">'+vhtml+'</span>':highlightTba(vhtml);?'<span class="'+mvCls+'">'+vhtml+'</span>':vhtml;
     h+='<tr><td>'+lbl+'</td><td style="'+bold+'">'+valHtml+linkHtml+'</td></tr>';
   });
   h+='</table>';
