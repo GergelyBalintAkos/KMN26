@@ -46,11 +46,11 @@ tr.ures td{color:#bbb;font-style:italic}
 .modal-btns button:hover{color:#888}
 .modal-brand{font-size:11px;color:#bbb;margin-bottom:3px;letter-spacing:0.3px}
 .modal-sub{font-size:14px;color:#444;margin-bottom:20px;font-weight:500}
-.mfield{padding:10px 0;border-bottom:1px solid #f2f2f2}
+.mfield{padding:11px 0;border-bottom:1px solid #e8e8e8}
 .mfield:last-child{border-bottom:none}
-.mfield .ml{font-size:10px;color:#bbb;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px;font-weight:500}
+.mfield .ml{font-size:11px;color:#777;margin-bottom:4px;font-weight:600;letter-spacing:0.2px}
 .mfield .mv{font-size:13px;color:#222;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.msection{margin:16px 0 4px 0;padding:8px 12px;background:#f5f5f3;border-radius:6px;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.8px}
+.msection{margin:18px 0 6px 0;padding:9px 14px;background:#efefed;border-radius:6px;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.8px;border-left:3px solid #ccc}
 .mv-varom{background:#ffeaea;border-radius:4px;padding:2px 7px;color:#c00;display:inline}
 .mv-tba{background:#fff8e8;border-radius:4px;padding:2px 7px;color:#a06000;display:inline}
 .link-btn{display:inline-block;padding:3px 10px;background:#e8f0fe;color:#0a4080;border-radius:5px;font-size:11px;text-decoration:none;margin-top:4px}
@@ -426,7 +426,7 @@ function openModal(i){
     var valHtml=mvCls?'<span class="'+mvCls+'">'+vhtml+'</span>':vhtml;
     h+='<div class="mfield"><div class="ml">'+lbl+'</div><div class="mv" style="'+bold+'">'+valHtml+linkHtml+'</div></div>';
   });
-  h+='<div style="font-size:10px;color:#ddd;margin-top:16px;padding-top:8px;border-top:1px solid #f5f5f5">Frissítés: '+LAST_UPDATE+'</div>';
+  h+='<div style="font-size:10px;color:#ddd;margin-top:16px;padding-top:8px;border-top:1px solid #f0f0f0">Frissítés: '+LAST_UPDATE+'</div>';
   document.getElementById('mbody').innerHTML=h;
   document.getElementById('modal').classList.add('open');
 }
@@ -445,10 +445,10 @@ function copyModal(){
 function printModal(){
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>';
   html+='body{font-family:sans-serif;padding:20px;font-size:13px;color:#222}';
-  html+='.mfield{padding:10px 0;border-bottom:1px solid #f2f2f2}';
-  html+='.mfield .ml{font-size:10px;color:#bbb;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px;font-weight:500}';
+  html+='.mfield{padding:11px 0;border-bottom:1px solid #e8e8e8}';
+  html+='.mfield .ml{font-size:11px;color:#777;margin-bottom:4px;font-weight:600;letter-spacing:0.2px}';
   html+='.mfield .mv{font-size:13px;color:#222;line-height:1.6;white-space:pre-wrap;word-break:break-word}';
-  html+='.msection{margin:16px 0 4px 0;padding:8px 12px;background:#f5f5f3;border-radius:6px;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.8px}';
+  html+='.msection{margin:18px 0 6px 0;padding:9px 14px;background:#efefed;border-radius:6px;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.8px;border-left:3px solid #ccc}';
   html+='.mv-varom{background:#ffeaea;border-radius:4px;padding:2px 7px;color:#c00;display:inline}';
   html+='.mv-tba{background:#fff8e8;border-radius:4px;padding:2px 7px;color:#a06000;display:inline}';
   html+='.link-btn{display:none}';
