@@ -220,19 +220,24 @@ function cellStatus(v){
   return '<span class="ok" title="'+v+'">✅</span>';
 }
 function isLink(v){return v&&/^https?:\/\//.test(v.trim());}
-  function highlightTba(v){if(!v)return v;return v.replace(/\b(TBA|TBC)\b/gi,function(m){return'<span class="mv-tba">'+m+'</span>';});}
+function highlightTba(v){
+  if(!v)return v;
+  return v.replace(/(TBA|TBC)/gi,function(m){
+    return'<span class="mv-tba">'+m+'</span>';
+  });
+}
 function renderCellValue(v){
   if(!v)return'—';
-  if(v.indexOf('|')<0)return v;
+  if(v.indexOf('|')<0)return highlightTba(v);
   var lines=v.trim().split('\n');
   var html='<table class="mv-table">';
   lines.forEach(function(line){
     if(!line.trim())return;
     if(line.indexOf('|')>=0){
       var cols=line.split('|');
-      html+='<tr>'+cols.map(function(c){return'<td>'+c.trim()+'</td>';}).join('')+'</tr>';
+      html+='<tr>'+cols.map(function(c){return'<td>'+highlightTba(c.trim())+'</td>';}).join('')+'</tr>';
     } else {
-      html+='<tr><td colspan="10" style="font-weight:500;background:#f9f9f7;padding:6px 8px">'+line.trim()+'</td></tr>';
+      html+='<tr><td colspan="10" style="font-weight:500;background:#f9f9f7;padding:6px 8px">'+highlightTba(line.trim())+'</td></tr>';
     }
   });
   html+='</table>';
@@ -418,7 +423,7 @@ function openModal(i){
     var mvCls=getMvClass(v);
     var bold=ci===0?'font-weight:600;font-size:14px;':'';
     var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
-   var valHtml=mvCls?'<span class="'+mvCls+'">'+vhtml+'</span>':highlightTba(vhtml);?'<span class="'+mvCls+'">'+vhtml+'</span>':vhtml;
+    var valHtml=mvCls?'<span class="'+mvCls+'">'+vhtml+'</span>':vhtml;
     h+='<tr><td>'+lbl+'</td><td style="'+bold+'">'+valHtml+linkHtml+'</td></tr>';
   });
   h+='</table>';
