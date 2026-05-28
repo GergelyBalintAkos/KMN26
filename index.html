@@ -193,17 +193,21 @@ function mapRows(grid){
 }
 function isTba(v){
   if(!v||v.trim()==='')return false;
-  var l=v.trim().toLowerCase();
-  return l==='tba'||l==='tbc';
+  return v.trim().toLowerCase()==='tba';
+}
+function isTbc(v){
+  if(!v||v.trim()==='')return false;
+  return v.trim().toLowerCase()==='tbc';
 }
 function isVarom(v){
   if(!v||v.trim()==='')return false;
   var l=v.toLowerCase();
-  if(isTba(v))return true;
+  if(isTba(v)||isTbc(v))return true;
   return l.indexOf('varom')>=0||l.indexOf('várom')>=0||l.indexOf('varjuk')>=0||l.indexOf('várjuk')>=0||l.indexOf('igerte')>=0||l.indexOf('ígérte')>=0;
 }
 function getMvClass(v){
   if(!v||v.trim()==='')return '';
+  if(isTbc(v))return 'mv-varom';
   if(isTba(v))return 'mv-tba';
   if(isVarom(v))return 'mv-varom';
   return '';
@@ -216,8 +220,10 @@ function cellStatus(v){
 function isLink(v){return v&&/^https?:\/\//.test(v.trim());}
 function highlightTba(v){
   if(!v)return v;
-  return v.replace(/(TBA|TBC)/gi,function(m){
-    return'<span class="mv-tba">'+m+'</span>';
+  return v.replace(/(TBC|TBA)/gi,function(m){
+    return m.toUpperCase()==='TBC'
+      ?'<span class="mv-varom">'+m+'</span>'
+      :'<span class="mv-tba">'+m+'</span>';
   });
 }
 function renderCellValue(v){
