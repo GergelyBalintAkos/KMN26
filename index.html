@@ -39,35 +39,32 @@ tr.ures td{color:#bbb;font-style:italic}
 .status-table td:nth-child(2){text-align:left;font-size:12px;white-space:nowrap;min-width:100px}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;justify-content:center;align-items:flex-start;padding-top:40px}
 .modal.open{display:flex}
-.mbox{background:#fff;border-radius:10px;width:90%;max-width:620px;max-height:85vh;overflow-y:auto;padding:20px;position:relative}
+.mbox{background:#fff;border-radius:10px;width:90%;max-width:620px;max-height:85vh;overflow-y:auto;padding:24px;position:relative}
 .mclose{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:#888}
-.mgrid{display:grid;grid-template-columns:1fr;gap:2px}
-.mgrid>div{padding:8px 10px;border-radius:6px;background:#fafaf8;border-left:3px solid #eee}
-.mgrid>div:hover{background:#f0f0ee;border-left-color:#ccc}
-.ml{font-size:11px;color:#888;margin-bottom:3px}
-.mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
-.mv a{color:#0a4080;word-break:break-all}
-.mv-varom{background:#ffeaea;border-radius:4px;padding:2px 6px}
-.mv-tba{background:#fff8e8;border-radius:4px;padding:2px 6px}
+.modal-btns{position:absolute;top:12px;right:40px;display:flex;gap:4px;align-items:center}
+.modal-btns button{background:none;border:none;cursor:pointer;font-size:16px;color:#bbb;padding:2px}
+.modal-brand{font-size:11px;color:#aaa;margin-bottom:2px}
+.modal-sub{font-size:13px;color:#555;margin-bottom:12px;font-weight:500}
+.mrows{width:100%;border-collapse:collapse}
+.mrows td{padding:7px 10px;font-size:13px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.mrows td:first-child{color:#888;font-size:12px;width:38%;white-space:nowrap}
+.mrows td:last-child{color:#222;word-break:break-word;white-space:pre-wrap}
+.mrows tr:last-child td{border-bottom:none}
+.mrows tr:hover td{background:#fafaf8}
+.msection{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.6px;padding:14px 10px 4px 10px;border-bottom:1px solid #eee}
+.mv-varom{background:#ffeaea;border-radius:4px;padding:1px 6px;color:#c00}
+.mv-tba{background:#fff8e8;border-radius:4px;padding:1px 6px;color:#a06000}
+.link-btn{display:inline-block;padding:3px 8px;background:#e8f0fe;color:#0a4080;border-radius:5px;font-size:11px;text-decoration:none;margin-top:3px}
+.link-btn:hover{background:#d0e2ff}
 .mv-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
 .mv-table td{padding:4px 8px;border:1px solid #eee;vertical-align:top;white-space:normal}
 .mv-table tr:first-child td{background:#f5f5f3;font-weight:500}
-.link-btn{display:inline-block;padding:4px 10px;background:#e8f0fe;color:#0a4080;border-radius:6px;font-size:12px;text-decoration:none;margin-top:4px}
-.link-btn:hover{background:#d0e2ff}
 .empty{text-align:center;padding:40px;color:#aaa}
 .legend{display:flex;gap:15px;font-size:12px;color:#666;margin-bottom:10px;flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:4px}
-.copy-btn{margin-top:10px;padding:8px 16px;background:#0a4080;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;width:100%}
-.copy-btn:hover{background:#0d5099}.copy-btn.copied{background:#3a8a3a}
-.divider{border:none;border-top:1px solid #eee;margin:15px 0}
 .save-note{font-size:11px;color:#3a8a3a;margin-left:8px}
-.alcim{font-weight:500;font-size:11px;color:#888;margin-top:12px;padding-top:8px;border-top:1px solid #eee;text-transform:uppercase;letter-spacing:0.5px}
-.modal-header{margin-bottom:15px}
-.modal-brand{font-size:11px;color:#888;margin-bottom:2px}
-.modal-sub{font-size:12px;color:#888;margin-bottom:2px;font-weight:600}
-.modal-refresh{font-size:11px;color:#aaa;margin-bottom:12px}
-.modal-btns{position:absolute;top:12px;right:40px;display:flex;gap:4px;align-items:center}
-.modal-btns button{background:none;border:none;cursor:pointer;font-size:16px;color:#bbb;padding:2px}
+.col-panel{display:none;background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:10px;column-count:3;column-gap:10px}
+.col-panel.open{display:block}
 </style>
 </head>
 <body>
@@ -92,6 +89,7 @@ tr.ures td{color:#bbb;font-style:italic}
   <button class="tab" onclick="setTab('adrien',this)">Adrien</button>
   <button class="tab" onclick="setTab('muvesz',this)">🎤 Művész</button>
   <button class="tab" onclick="setTab('muveszpenz',this)">🎤💰 Művész+pénzügy</button>
+  <button class="tab" onclick="setTab('foszervezok',this)">👥 Főszervezők</button>
 </div>
 <div class="filters">
   <input type="text" id="q" placeholder="Keresés..." oninput="render()">
@@ -116,11 +114,8 @@ tr.ures td{color:#bbb;font-style:italic}
       <button onclick="printModal()" title="PDF / Nyomtatás">🖨️</button>
       <button id="copyModalBtn" onclick="copyModal()" title="Másolás">📋</button>
     </div>
-    <div class="modal-header">
-      <div class="modal-brand">Kolozsvári Magyar Napok 2026</div>
-      <div class="modal-sub" id="msub"></div>
-      <div class="modal-refresh" id="mrefresh"></div>
-    </div>
+    <div class="modal-brand">Kolozsvári Magyar Napok 2026</div>
+    <div class="modal-sub" id="msub"></div>
     <div id="mbody"></div>
   </div>
 </div>
@@ -143,7 +138,8 @@ var DEFAULT_COLS={
   lilla:[0,1,2],
   adrien:[0,1,2,52],
   muvesz:[0,1,2,3,4,8,9,10,11,12,13,14,17,20,24,27,29,30,31,50],
-  muveszpenz:[0,1,2,3,4,8,9,10,11,12,13,14,17,20,24,27,29,30,31,50,55,56,57,58,59,62,66,67,68]
+  muveszpenz:[0,1,2,3,4,8,9,10,11,12,13,14,17,20,24,27,29,30,31,50,55,56,57,58,59,62,66,67,68],
+  foszervezok:[0,1,2,3,4]
 };
 var TAB_COLS={};
 function buildLinkCols(){
@@ -153,8 +149,7 @@ function buildLinkCols(){
     if(h.toLowerCase().indexOf('link')>=0){
       for(var j=i-1;j>=0;j--){
         if(ALL_HEADERS[j]&&ALL_HEADERS[j].toLowerCase().indexOf('link')<0){
-          LINK_COLS[j]=i;
-          break;
+          LINK_COLS[j]=i;break;
         }
       }
     }
@@ -264,8 +259,7 @@ function load(){
       ROWS=mapRows(parseCSV(t));
       LAST_UPDATE=new Date().toLocaleString('hu-HU');
       document.getElementById('info').textContent='Frissítve: '+LAST_UPDATE+' ('+ROWS.length+' sor)';
-      buildLinkCols();
-      buildSelects();buildColPanel();render();
+      buildLinkCols();buildSelects();buildColPanel();render();
     })
     .catch(function(e){document.getElementById('info').textContent='Hiba: '+e.message;});
 }
@@ -398,12 +392,10 @@ function openModal(i){
   CURRENT_ROW_IDX=i;
   var r=ROWS[i];
   document.getElementById('msub').textContent=(r[2]||'')+(r[3]?' · '+r[3]:'')+(r[4]?' · '+r[4]:'');
-  document.getElementById('mrefresh').textContent='Frissítés dátuma: '+LAST_UPDATE;
   var uzenetBtn=document.getElementById('uzenetModalBtn');
   uzenetBtn.style.display=buildUzenet(r)?'inline-block':'none';
-  var h='';
+  var h='<table class="mrows">';
   var visCols=TAB_COLS[TAB]||[];
-  h+='<div class="mgrid">';
   var linkColVals=Object.values(LINK_COLS);
   visCols.forEach(function(ci){
     if(linkColVals.indexOf(ci)>=0)return;
@@ -413,28 +405,27 @@ function openModal(i){
     if(v&&(v.trim().toLowerCase()==='x'||v.trim().toLowerCase()==='alcím'))return;
     var isAlcim=lbl.indexOf('##')===0;
     if(isAlcim){
-      h+='<div class="alcim">'+lbl.replace(/^##\s*/,'')+'</div>';
+      h+='</table><div class="msection">'+lbl.replace(/^##\s*/,'')+'</div><table class="mrows">';
       return;
     }
     var linkCol=LINK_COLS[ci];
     var linkVal=linkCol!==undefined?r[linkCol]||'':'';
     var vhtml=renderCellValue(v);
     var mvCls=getMvClass(v);
-    var bold=ci===0?'font-weight:600;':'';
+    var bold=ci===0?'font-weight:600;font-size:14px;':'';
     var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
-    h+='<div><div class="ml">'+lbl+'</div><div class="mv '+mvCls+'" style="'+bold+'">'+vhtml+linkHtml+'</div></div>';
+    var valCell=mvCls?'<span class="'+mvCls+'">'+vhtml+'</span>':vhtml;
+    h+='<tr><td>'+lbl+'</td><td style="'+bold+'">'+valCell+linkHtml+'</td></tr>';
   });
-  h+='</div>';
+  h+='</table>';
+  h+='<div style="font-size:10px;color:#bbb;margin-top:12px;padding-top:8px;border-top:1px solid #f0f0f0">Frissítés dátuma: '+LAST_UPDATE+'</div>';
   document.getElementById('mbody').innerHTML=h;
   document.getElementById('modal').classList.add('open');
 }
 function copyModal(){
   var html=document.getElementById('mbody').innerHTML;
-  var header='<p><b>Kolozsvári Magyar Napok 2026</b><br>'+
-    document.getElementById('msub').textContent+'<br>'+
-    document.getElementById('mrefresh').textContent+'</p>';
-  var fullHtml=header+html;
-  var blob=new Blob([fullHtml],{type:'text/html'});
+  var header='<p><b>Kolozsvári Magyar Napok 2026</b><br>'+document.getElementById('msub').textContent+'</p>';
+  var blob=new Blob([header+html],{type:'text/html'});
   var textBlob=new Blob([document.getElementById('mbody').innerText],{type:'text/plain'});
   var item=new ClipboardItem({'text/html':blob,'text/plain':textBlob});
   navigator.clipboard.write([item]).then(function(){
@@ -445,21 +436,19 @@ function copyModal(){
 }
 function printModal(){
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>';
-  html+='body{font-family:sans-serif;padding:20px;font-size:13px;line-height:1.5;color:#222}';
-  html+='.ml{font-size:11px;color:#888;margin-bottom:2px;margin-top:8px}';
-  html+='.mv{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}';
-  html+='.mv-varom{background:#ffeaea;border-radius:4px;padding:2px 6px}';
-  html+='.mv-tba{background:#fff8e8;border-radius:4px;padding:2px 6px}';
-  html+='.alcim{font-weight:500;font-size:11px;color:#888;margin-top:15px;padding-top:8px;border-top:1px solid #eee;text-transform:uppercase;letter-spacing:0.5px}';
+  html+='body{font-family:sans-serif;padding:20px;font-size:13px;color:#222}';
+  html+='.mrows{width:100%;border-collapse:collapse}';
+  html+='.mrows td{padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top;font-size:13px}';
+  html+='.mrows td:first-child{color:#888;font-size:12px;width:38%;white-space:nowrap}';
+  html+='.msection{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.6px;padding:12px 10px 4px 10px;border-bottom:1px solid #eee}';
+  html+='.mv-varom{background:#ffeaea;border-radius:4px;padding:1px 6px;color:#c00}';
+  html+='.mv-tba{background:#fff8e8;border-radius:4px;padding:1px 6px;color:#a06000}';
   html+='.link-btn{display:none}';
-  html+='table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}';
-  html+='td{padding:4px 8px;border:1px solid #eee;vertical-align:top}';
-  html+='hr{border:none;border-top:1px solid #eee;margin:15px 0}';
+  html+='table.mv-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}';
+  html+='table.mv-table td{padding:4px 8px;border:1px solid #eee;vertical-align:top}';
   html+='</style></head><body>';
-  html+='<p style="font-size:11px;color:#888;margin-bottom:2px">Kolozsvári Magyar Napok 2026</p>';
-  html+='<p style="font-size:12px;font-weight:600;margin-bottom:2px">'+document.getElementById('msub').textContent+'</p>';
-  html+='<p style="font-size:11px;color:#aaa;margin-bottom:15px">'+document.getElementById('mrefresh').textContent+'</p>';
-  html+='<hr>';
+  html+='<p style="font-size:11px;color:#aaa;margin-bottom:2px">Kolozsvári Magyar Napok 2026</p>';
+  html+='<p style="font-size:13px;font-weight:600;margin-bottom:15px">'+document.getElementById('msub').textContent+'</p>';
   html+=document.getElementById('mbody').innerHTML;
   html+='</body></html>';
   var w=window.open('','_blank','width=700,height=800');
@@ -469,8 +458,7 @@ function printModal(){
 }
 function copyUzenetModal(){
   if(CURRENT_ROW_IDX<0)return;
-  var r=ROWS[CURRENT_ROW_IDX];
-  var uzenet=buildUzenet(r);
+  var uzenet=buildUzenet(ROWS[CURRENT_ROW_IDX]);
   if(!uzenet)return;
   navigator.clipboard.writeText(uzenet).then(function(){
     var btn=document.getElementById('uzenetModalBtn');
