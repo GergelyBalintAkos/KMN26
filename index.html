@@ -205,7 +205,7 @@ function isVarom(v){
   if(!v||v.trim()==='')return false;
   var l=v.toLowerCase();
   if(isTba(v))return true;
-  return l.indexOf('varom')>=0||l.indexOf('várom')>=0||l.indexOf('igerte')>=0||l.indexOf('ígérte')>=0||l.indexOf('varjuk')>=0||l.indexOf('várjuk')>=0;
+  return l.indexOf('varom')>=0||l.indexOf('várom')>=0||l.indexOf('varjuk')>=0||l.indexOf('várjuk')>=0||l.indexOf('igerte')>=0||l.indexOf('ígérte')>=0||l.indexOf('varjuk')>=0||l.indexOf('várjuk')>=0;
 }
 function getMvClass(v){
   if(!v||v.trim()==='')return '';
