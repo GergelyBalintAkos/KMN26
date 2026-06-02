@@ -609,6 +609,24 @@ function checkUrlView(){
   }
   var urlTab=params.get('tab');
   if(urlTab){
+    setTimeout(function(){
+      var tabBtn=document.querySelector('[onclick*="\''+urlTab+'\'"]');
+      if(tabBtn)tabBtn.click();
+      if(params.get('solo')==='1')document.querySelector('.tabs').style.display='none';
+    },100);
+  }
+}
+  var params=new URLSearchParams(window.location.search);
+  var vk=params.get('view');
+  if(vk&&VIEWS[vk]){
+    document.getElementById('normalMode').style.display='none';
+    document.getElementById('viewMode').style.display='block';
+    CURRENT_VIEW=vk;
+    document.getElementById('viewTitle').textContent=VIEWS[vk].name;
+    document.getElementById('viewLinkBox').textContent=window.location.href;
+  }
+  var urlTab=params.get('tab');
+  if(urlTab){
     var tabBtn=document.querySelector('[onclick*="setTab(\''+urlTab+'\'"]');
     if(tabBtn){
       tabBtn.click();
