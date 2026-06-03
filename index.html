@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -68,11 +66,9 @@ tr.ures td{color:#bbb;font-style:italic}
 .view-title{font-size:16px;font-weight:600;color:#222}
 .view-link-box{background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;font-size:12px;color:#555;font-family:monospace;flex:1;min-width:200px}
 .view-print-btn{padding:7px 14px;background:#222;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px}
-/* Solo mode: részleg-specifikus fejléc */
 .solo-header{background:#222;color:#fff;border-radius:8px;padding:12px 16px;margin-bottom:15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .solo-header-title{font-size:17px;font-weight:600;letter-spacing:0.2px}
 .solo-header-sub{font-size:12px;color:#aaa}
-.solo-bar{background:#eee;padding:10px 15px;border-radius:8px;margin-bottom:15px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -117,7 +113,6 @@ tr.ures td{color:#bbb;font-style:italic}
 <div style="font-size:12px;color:#888;padding:8px 0" id="count"></div>
 </div>
 
-<!-- SOLO MODE: részlegnek küldött nézet -->
 <div id="soloMode" style="display:none">
   <div class="solo-header">
     <div>
@@ -134,7 +129,6 @@ tr.ures td{color:#bbb;font-style:italic}
     <input type="text" id="sq" placeholder="Keresés..." oninput="renderSolo()">
     <select id="sfhely" onchange="renderSolo()"><option value="">Minden helyszín</option></select>
     <select id="sfdat" onchange="renderSolo()"><option value="">Minden dátum</option></select>
-    <button class="col-toggle-btn" id="soloColToggleBtn" onclick="toggleSoloColPanel()">⚙ Oszlopok</button>
   </div>
   <div class="col-panel" id="soloColPanel"></div>
   <div id="soloLegend" class="legend" style="display:none">
@@ -191,7 +185,6 @@ var SOLO_MODE=false;
 var SOLO_TAB='';
 var SOLO_SK=null,SOLO_SD=1;
 
-// Tab megnevezések (solo fejléchez)
 var TAB_NAMES={
   all:'📋 Összes',
   todo:'✅ Teendők',
@@ -364,9 +357,9 @@ function load(){
       var msg='Frissítve: '+LAST_UPDATE+' ('+ROWS.length+' sor)';
       if(SOLO_MODE){
         document.getElementById('soloInfo').textContent=msg;
-        buildLinkCols();buildSoloSelects();buildSoloColPanel();renderSolo();
+        buildLinkCols();buildSoloSelects();renderSolo();
       } else if(CURRENT_VIEW){
-        document.getElementById('info') && (document.getElementById('info').textContent=msg);
+        document.getElementById('info')&&(document.getElementById('info').textContent=msg);
         buildLinkCols();buildSelects();buildColPanel();renderView();buildViewSelects();
       } else {
         document.getElementById('info').textContent=msg;
@@ -415,16 +408,6 @@ function buildColPanel(){
   });
   document.getElementById('colPanel').innerHTML=html;
 }
-function buildSoloColPanel(){
-  if(SOLO_TAB==='status')return;
-  var cols=TAB_COLS[SOLO_TAB]||[],html='';
-  ALL_HEADERS.forEach(function(h,i){
-    if(!h)return;
-    var chk=cols.indexOf(i)>=0?'checked':'';
-    html+='<label class="col-check"><input type="checkbox" '+chk+' onchange="toggleSoloCol('+i+',this.checked)"> '+h+'</label>';
-  });
-  document.getElementById('soloColPanel').innerHTML=html;
-}
 function buildViewColPanel(){
   if(!CURRENT_VIEW)return;
   var cols=VIEW_COLS[CURRENT_VIEW]||[],html='';
@@ -442,13 +425,6 @@ function toggleCol(i,checked){
   TAB_COLS[TAB].sort(function(a,b){return a-b;});
   saveCols(TAB);render();
 }
-function toggleSoloCol(i,checked){
-  if(!TAB_COLS[SOLO_TAB])TAB_COLS[SOLO_TAB]=[];
-  if(checked&&TAB_COLS[SOLO_TAB].indexOf(i)<0)TAB_COLS[SOLO_TAB].push(i);
-  if(!checked)TAB_COLS[SOLO_TAB]=TAB_COLS[SOLO_TAB].filter(function(c){return c!==i;});
-  TAB_COLS[SOLO_TAB].sort(function(a,b){return a-b;});
-  saveCols(SOLO_TAB);renderSolo();
-}
 function toggleViewCol(i,checked){
   if(!VIEW_COLS[CURRENT_VIEW])VIEW_COLS[CURRENT_VIEW]=[];
   if(checked&&VIEW_COLS[CURRENT_VIEW].indexOf(i)<0)VIEW_COLS[CURRENT_VIEW].push(i);
@@ -459,10 +435,6 @@ function toggleViewCol(i,checked){
 function toggleColPanel(){
   var p=document.getElementById('colPanel'),b=document.getElementById('colToggleBtn');
   buildColPanel();p.classList.toggle('open');b.classList.toggle('open');
-}
-function toggleSoloColPanel(){
-  var p=document.getElementById('soloColPanel'),b=document.getElementById('soloColToggleBtn');
-  buildSoloColPanel();p.classList.toggle('open');b.classList.toggle('open');
 }
 function toggleViewColPanel(){
   var p=document.getElementById('viewColPanel'),b=document.getElementById('viewColToggleBtn');
@@ -538,7 +510,6 @@ function renderSolo(){
   var rows=getSoloFiltered();
   if(SOLO_SK!==null)rows.sort(function(a,b){return String(a[SOLO_SK]||'').localeCompare(String(b[SOLO_SK]||''),'hu')*SOLO_SD;});
   document.getElementById('soloLegend').style.display=SOLO_TAB==='status'?'flex':'none';
-  document.getElementById('soloColToggleBtn').style.display=SOLO_TAB==='status'?'none':'inline-block';
   document.getElementById('soloTable').className=SOLO_TAB==='status'?'status-table':'';
   if(SOLO_TAB==='status')renderStatus(rows,'soloThead','soloTbody');
   else renderNormal(rows,TAB_COLS[SOLO_TAB]||[0,1,2],'soloThead','soloTbody');
@@ -657,8 +628,8 @@ function openModal(i){
   uzenetBtn.style.display=buildUzenet(r)?'inline-block':'none';
   var h='';
   var activeCols;
-  if(SOLO_MODE) activeCols=TAB_COLS[SOLO_TAB]||[];
-  else if(CURRENT_VIEW) activeCols=VIEW_COLS[CURRENT_VIEW]||[];
+  if(SOLO_MODE)activeCols=TAB_COLS[SOLO_TAB]||[];
+  else if(CURRENT_VIEW)activeCols=VIEW_COLS[CURRENT_VIEW]||[];
   else activeCols=TAB_COLS[TAB]||[];
   var linkColVals=Object.values(LINK_COLS);
   activeCols.forEach(function(ci){
@@ -726,14 +697,11 @@ function copyUzenetModal(){
   });
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
-
 function checkUrlView(){
   var params=new URLSearchParams(window.location.search);
   var vk=params.get('view');
   var soloTab=params.get('solo');
-
-  // SOLO MODE: ?solo=cater (vagy bármely tab kulcs)
-  if(soloTab && TAB_NAMES[soloTab]){
+  if(soloTab&&TAB_NAMES[soloTab]){
     SOLO_MODE=true;
     SOLO_TAB=soloTab;
     document.title=TAB_NAMES[soloTab]+' — KMN26';
@@ -743,8 +711,6 @@ function checkUrlView(){
     document.getElementById('soloTitle').textContent=TAB_NAMES[soloTab]+' — KMN26';
     return;
   }
-
-  // VIEW MODE: ?view=arculat stb. (régi működés)
   if(vk&&VIEWS[vk]){
     document.getElementById('normalMode').style.display='none';
     document.getElementById('soloMode').style.display='none';
@@ -754,8 +720,6 @@ function checkUrlView(){
     document.getElementById('viewLinkBox').textContent=window.location.href;
     return;
   }
-
-  // TAB PARAM (régi ?tab= + solo=1 kombináció visszafelé kompatibilitáshoz)
   var urlTab=params.get('tab');
   if(urlTab){
     setTimeout(function(){
