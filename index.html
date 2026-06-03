@@ -455,7 +455,7 @@ function sbadge(h,u){
   if(l.indexOf('küldeni')>=0||l.indexOf('tisztázni')>=0||h.indexOf('!')>=0)return'<span class="badge btd">Teendő</span>';
   return'<span class="badge bvr">Folyamatban</span>';
 }
-function fmt(v){return v?Number(String(v).replace(/[.\s]/g,'')).toLocaleString('hu-HU'):'—';}
+function fmt(v){if(!v)return'—';var n=Number(String(v).replace(/[.\s]/g,'').replace(/,/g,'.'));return isNaN(n)?v:n.toLocaleString('hu-HU');}
 function getFiltered(){
   var q=(document.getElementById('q').value||'').toLowerCase();
   var fh=document.getElementById('fhely').value;
