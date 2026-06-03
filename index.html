@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -66,6 +67,11 @@ tr.ures td{color:#bbb;font-style:italic}
 .view-title{font-size:16px;font-weight:600;color:#222}
 .view-link-box{background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;font-size:12px;color:#555;font-family:monospace;flex:1;min-width:200px}
 .view-print-btn{padding:7px 14px;background:#222;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px}
+/* Solo mode: részleg-specifikus fejléc */
+.solo-header{background:#222;color:#fff;border-radius:8px;padding:12px 16px;margin-bottom:15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.solo-header-title{font-size:17px;font-weight:600;letter-spacing:0.2px}
+.solo-header-sub{font-size:12px;color:#aaa}
+.solo-bar{background:#eee;padding:10px 15px;border-radius:8px;margin-bottom:15px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -110,6 +116,35 @@ tr.ures td{color:#bbb;font-style:italic}
 <div style="font-size:12px;color:#888;padding:8px 0" id="count"></div>
 </div>
 
+<!-- SOLO MODE: részlegnek küldött nézet -->
+<div id="soloMode" style="display:none">
+  <div class="solo-header">
+    <div>
+      <div class="solo-header-title" id="soloTitle"></div>
+      <div class="solo-header-sub">Kolozsvári Magyar Napok 2026</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="dot"></span>
+      <span id="soloInfo" style="font-size:12px;color:#aaa">Betöltés...</span>
+      <button onclick="load()" style="background:#444;border-color:#555;color:#fff">↻ Frissítés</button>
+    </div>
+  </div>
+  <div class="filters">
+    <input type="text" id="sq" placeholder="Keresés..." oninput="renderSolo()">
+    <select id="sfhely" onchange="renderSolo()"><option value="">Minden helyszín</option></select>
+    <select id="sfdat" onchange="renderSolo()"><option value="">Minden dátum</option></select>
+    <button class="col-toggle-btn" id="soloColToggleBtn" onclick="toggleSoloColPanel()">⚙ Oszlopok</button>
+  </div>
+  <div class="col-panel" id="soloColPanel"></div>
+  <div id="soloLegend" class="legend" style="display:none">
+    <span><span class="ok">✅</span> Megvan</span>
+    <span><span class="vr">⏳</span> Várom / TBA</span>
+    <span><span class="ur">—</span> Nincs info</span>
+  </div>
+  <div class="wrap"><table id="soloTable"><thead id="soloThead"></thead><tbody id="soloTbody"></tbody></table></div>
+  <div style="font-size:12px;color:#888;padding:8px 0" id="soloCount"></div>
+</div>
+
 <div id="viewMode" style="display:none">
 <div class="view-bar">
   <span class="view-title" id="viewTitle"></span>
@@ -151,6 +186,28 @@ var LINK_COLS={};
 var CURRENT_ROW_IDX=-1;
 var CURRENT_VIEW=null;
 var VIEW_SK=null,VIEW_SD=1;
+var SOLO_MODE=false;
+var SOLO_TAB='';
+var SOLO_SK=null,SOLO_SD=1;
+
+// Tab megnevezések (solo fejléchez)
+var TAB_NAMES={
+  all:'📋 Összes',
+  todo:'✅ Teendők',
+  status:'📊 Státusz',
+  money:'💰 Pénzügy',
+  cater:'🍽️ Catering',
+  tech:'🔧 Technika',
+  szallas:'🏨 Szállás',
+  arculat:'🎨 Arculat',
+  eniko:'Enikő',
+  lilla:'Lilla',
+  adrien:'Adrien',
+  muvesz:'🎤 Művész',
+  muveszpenz:'🎤💰 Művész+pénzügy',
+  foszervezok:'👥 Főszervezők'
+};
+
 var VIEWS={
   arculat:{name:'🎨 Arculat',cols:[0,1,2,3,4,5,6,7,9,10,11,12,13,14,15]},
   szallas:{name:'🏨 Szállás & Étkezés',cols:[0,1,2,3,4,5,23,24,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]},
@@ -177,6 +234,7 @@ var DEFAULT_COLS={
 };
 var TAB_COLS={};
 var VIEW_COLS={};
+
 function buildLinkCols(){
   LINK_COLS={};
   ALL_HEADERS.forEach(function(h,i){
@@ -202,8 +260,7 @@ function saveCols(tab){
   try{
     localStorage.setItem('kmn26_cols_'+tab,JSON.stringify(TAB_COLS[tab]));
     var n=document.getElementById('saveNote');
-    n.textContent='✓ Mentve';
-    setTimeout(function(){n.textContent='';},2000);
+    if(n){n.textContent='✓ Mentve';setTimeout(function(){n.textContent='';},2000);}
   }catch(e){}
 }
 function saveViewCols(vk){
@@ -295,22 +352,42 @@ function buildUzenet(r){
   return s;
 }
 function load(){
-  document.getElementById('info').textContent='Betöltés...';
+  var infoEl=SOLO_MODE?document.getElementById('soloInfo'):document.getElementById('info');
+  if(infoEl)infoEl.textContent='Betöltés...';
   fetch('https://docs.google.com/spreadsheets/d/'+SID+'/export?format=csv&gid=0&_='+Date.now())
     .then(function(r){return r.arrayBuffer();})
     .then(function(b){
       var t=new TextDecoder('utf-8').decode(b);
       ROWS=mapRows(parseCSV(t));
       LAST_UPDATE=new Date().toLocaleString('hu-HU');
-      document.getElementById('info').textContent='Frissítve: '+LAST_UPDATE+' ('+ROWS.length+' sor)';
-      buildLinkCols();buildSelects();buildColPanel();
-      if(CURRENT_VIEW){renderView();buildViewSelects();}
-      else render();
+      var msg='Frissítve: '+LAST_UPDATE+' ('+ROWS.length+' sor)';
+      if(SOLO_MODE){
+        document.getElementById('soloInfo').textContent=msg;
+        buildLinkCols();buildSoloSelects();buildSoloColPanel();renderSolo();
+      } else if(CURRENT_VIEW){
+        document.getElementById('info') && (document.getElementById('info').textContent=msg);
+        buildLinkCols();buildSelects();buildColPanel();renderView();buildViewSelects();
+      } else {
+        document.getElementById('info').textContent=msg;
+        buildLinkCols();buildSelects();buildColPanel();render();
+      }
     })
-    .catch(function(e){document.getElementById('info').textContent='Hiba: '+e.message;});
+    .catch(function(e){
+      var el=SOLO_MODE?document.getElementById('soloInfo'):document.getElementById('info');
+      if(el)el.textContent='Hiba: '+e.message;
+    });
 }
 function buildSelects(){
   var sh=document.getElementById('fhely'),sd=document.getElementById('fdat');
+  sh.innerHTML='<option value="">Minden helyszín</option>';
+  sd.innerHTML='<option value="">Minden dátum</option>';
+  var helyek={},datumok={};
+  ROWS.forEach(function(r){if(r[3])helyek[r[3]]=1;if(r[1])datumok[r[1]]=1;});
+  Object.keys(helyek).sort().forEach(function(v){sh.innerHTML+='<option>'+v+'</option>';});
+  Object.keys(datumok).sort().forEach(function(v){sd.innerHTML+='<option>'+v+'</option>';});
+}
+function buildSoloSelects(){
+  var sh=document.getElementById('sfhely'),sd=document.getElementById('sfdat');
   sh.innerHTML='<option value="">Minden helyszín</option>';
   sd.innerHTML='<option value="">Minden dátum</option>';
   var helyek={},datumok={};
@@ -337,6 +414,16 @@ function buildColPanel(){
   });
   document.getElementById('colPanel').innerHTML=html;
 }
+function buildSoloColPanel(){
+  if(SOLO_TAB==='status')return;
+  var cols=TAB_COLS[SOLO_TAB]||[],html='';
+  ALL_HEADERS.forEach(function(h,i){
+    if(!h)return;
+    var chk=cols.indexOf(i)>=0?'checked':'';
+    html+='<label class="col-check"><input type="checkbox" '+chk+' onchange="toggleSoloCol('+i+',this.checked)"> '+h+'</label>';
+  });
+  document.getElementById('soloColPanel').innerHTML=html;
+}
 function buildViewColPanel(){
   if(!CURRENT_VIEW)return;
   var cols=VIEW_COLS[CURRENT_VIEW]||[],html='';
@@ -354,6 +441,13 @@ function toggleCol(i,checked){
   TAB_COLS[TAB].sort(function(a,b){return a-b;});
   saveCols(TAB);render();
 }
+function toggleSoloCol(i,checked){
+  if(!TAB_COLS[SOLO_TAB])TAB_COLS[SOLO_TAB]=[];
+  if(checked&&TAB_COLS[SOLO_TAB].indexOf(i)<0)TAB_COLS[SOLO_TAB].push(i);
+  if(!checked)TAB_COLS[SOLO_TAB]=TAB_COLS[SOLO_TAB].filter(function(c){return c!==i;});
+  TAB_COLS[SOLO_TAB].sort(function(a,b){return a-b;});
+  saveCols(SOLO_TAB);renderSolo();
+}
 function toggleViewCol(i,checked){
   if(!VIEW_COLS[CURRENT_VIEW])VIEW_COLS[CURRENT_VIEW]=[];
   if(checked&&VIEW_COLS[CURRENT_VIEW].indexOf(i)<0)VIEW_COLS[CURRENT_VIEW].push(i);
@@ -364,6 +458,10 @@ function toggleViewCol(i,checked){
 function toggleColPanel(){
   var p=document.getElementById('colPanel'),b=document.getElementById('colToggleBtn');
   buildColPanel();p.classList.toggle('open');b.classList.toggle('open');
+}
+function toggleSoloColPanel(){
+  var p=document.getElementById('soloColPanel'),b=document.getElementById('soloColToggleBtn');
+  buildSoloColPanel();p.classList.toggle('open');b.classList.toggle('open');
 }
 function toggleViewColPanel(){
   var p=document.getElementById('viewColPanel'),b=document.getElementById('viewColToggleBtn');
@@ -399,6 +497,20 @@ function getFiltered(){
     return true;
   });
 }
+function getSoloFiltered(){
+  var q=(document.getElementById('sq').value||'').toLowerCase();
+  var fh=document.getElementById('sfhely').value;
+  var fd=document.getElementById('sfdat').value;
+  return ROWS.filter(function(r){
+    if(r.ures)return false;
+    if(SOLO_TAB==='todo'&&!r[8])return false;
+    if(SOLO_TAB==='money'&&!r[91])return false;
+    if(q){var all='';for(var i=0;i<ALL_HEADERS.length;i++)all+=r[i]+' ';if(all.toLowerCase().indexOf(q)<0)return false;}
+    if(fh&&r[3]!==fh)return false;
+    if(fd&&r[1]!==fd)return false;
+    return true;
+  });
+}
 function getViewFiltered(){
   var q=(document.getElementById('vq').value||'').toLowerCase();
   var fh=document.getElementById('vfhely').value;
@@ -417,19 +529,28 @@ function render(){
   document.getElementById('legend').style.display=TAB==='status'?'flex':'none';
   document.getElementById('colToggleBtn').style.display=TAB==='status'?'none':'inline-block';
   document.getElementById('maintable').className=TAB==='status'?'status-table':'';
-  if(TAB==='status')renderStatus(rows);
-  else renderNormal(rows);
+  if(TAB==='status')renderStatus(rows,'thead','tbody');
+  else renderNormal(rows,TAB_COLS[TAB]||[0,1,2],'thead','tbody');
   document.getElementById('count').textContent=rows.length+' sor';
 }
-function renderNormal(rows){
-  var cols=TAB_COLS[TAB]||[0,1,2];
+function renderSolo(){
+  var rows=getSoloFiltered();
+  if(SOLO_SK!==null)rows.sort(function(a,b){return String(a[SOLO_SK]||'').localeCompare(String(b[SOLO_SK]||''),'hu')*SOLO_SD;});
+  document.getElementById('soloLegend').style.display=SOLO_TAB==='status'?'flex':'none';
+  document.getElementById('soloColToggleBtn').style.display=SOLO_TAB==='status'?'none':'inline-block';
+  document.getElementById('soloTable').className=SOLO_TAB==='status'?'status-table':'';
+  if(SOLO_TAB==='status')renderStatus(rows,'soloThead','soloTbody');
+  else renderNormal(rows,TAB_COLS[SOLO_TAB]||[0,1,2],'soloThead','soloTbody');
+  document.getElementById('soloCount').textContent=rows.length+' sor';
+}
+function renderNormal(rows,cols,theadId,tbodyId){
   var linkColVals=Object.values(LINK_COLS);
   var visCols=cols.filter(function(c){return linkColVals.indexOf(c)<0;});
-  document.getElementById('thead').innerHTML='<tr>'+visCols.map(function(i){
-    return'<th onclick="sort('+i+')" title="'+ALL_HEADERS[i]+'">'+ALL_HEADERS[i]+'</th>';
+  document.getElementById(theadId).innerHTML='<tr>'+visCols.map(function(i){
+    return'<th onclick="sortBy(\''+theadId+'\','+i+')" title="'+ALL_HEADERS[i]+'">'+ALL_HEADERS[i]+'</th>';
   }).join('')+'</tr>';
-  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+visCols.length+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
-  document.getElementById('tbody').innerHTML=rows.map(function(r){
+  if(!rows.length){document.getElementById(tbodyId).innerHTML='<tr><td colspan="'+visCols.length+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
+  document.getElementById(tbodyId).innerHTML=rows.map(function(r){
     var ri=ROWS.indexOf(r);
     return'<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
       +visCols.map(function(ci){
@@ -468,7 +589,7 @@ function renderView(){
   document.getElementById('viewCount').textContent=rows.length+' sor';
   document.getElementById('viewInfo').textContent='Frissítve: '+LAST_UPDATE;
 }
-function renderStatus(rows){
+function renderStatus(rows,theadId,tbodyId){
   var STATUS_COLS=[
     {k:10,l:'Fotók'},{k:13,l:'Leírás'},{k:17,l:'Rider'},
     {k:24,l:'Járművek'},{k:27,l:'Stáb'},{k:28,l:'Fellépők'},
@@ -481,15 +602,19 @@ function renderStatus(rows){
   var hdr='<tr><th>Művész</th><th>Helyszín</th>';
   STATUS_COLS.forEach(function(c){hdr+='<th>'+c.l+'</th>';});
   hdr+='</tr>';
-  document.getElementById('thead').innerHTML=hdr;
-  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="'+(STATUS_COLS.length+2)+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
-  document.getElementById('tbody').innerHTML=rows.map(function(r){
+  document.getElementById(theadId).innerHTML=hdr;
+  if(!rows.length){document.getElementById(tbodyId).innerHTML='<tr><td colspan="'+(STATUS_COLS.length+2)+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
+  document.getElementById(tbodyId).innerHTML=rows.map(function(r){
     var ri=ROWS.indexOf(r);
     var cells='<td onclick="openModal('+ri+')" style="cursor:pointer" title="'+r[0]+'">'+r[0]+'</td>';
     cells+='<td>'+hbadge(r[3])+'</td>';
     STATUS_COLS.forEach(function(c){cells+='<td onclick="openModal('+ri+')" style="cursor:pointer">'+cellStatus(r[c.k])+'</td>';});
     return'<tr>'+cells+'</tr>';
   }).join('');
+}
+function sortBy(theadId,k){
+  if(theadId==='soloThead'){if(SOLO_SK===k)SOLO_SD*=-1;else{SOLO_SK=k;SOLO_SD=1;}renderSolo();}
+  else{if(SK===k)SD*=-1;else{SK=k;SD=1;}render();}
 }
 function sort(k){if(SK===k)SD*=-1;else{SK=k;SD=1;}render();}
 function sortView(k){if(VIEW_SK===k)VIEW_SD*=-1;else{VIEW_SK=k;VIEW_SD=1;}renderView();}
@@ -530,9 +655,12 @@ function openModal(i){
   var uzenetBtn=document.getElementById('uzenetModalBtn');
   uzenetBtn.style.display=buildUzenet(r)?'inline-block':'none';
   var h='';
-  var visCols=CURRENT_VIEW?VIEW_COLS[CURRENT_VIEW]:(TAB_COLS[TAB]||[]);
+  var activeCols;
+  if(SOLO_MODE) activeCols=TAB_COLS[SOLO_TAB]||[];
+  else if(CURRENT_VIEW) activeCols=VIEW_COLS[CURRENT_VIEW]||[];
+  else activeCols=TAB_COLS[TAB]||[];
   var linkColVals=Object.values(LINK_COLS);
-  visCols.forEach(function(ci){
+  activeCols.forEach(function(ci){
     if(linkColVals.indexOf(ci)>=0)return;
     var lbl=ALL_HEADERS[ci]||'';
     if(!lbl)return;
@@ -597,23 +725,43 @@ function copyUzenetModal(){
   });
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
+
 function checkUrlView(){
   var params=new URLSearchParams(window.location.search);
   var vk=params.get('view');
+  var soloTab=params.get('solo');
+
+  // SOLO MODE: ?solo=cater (vagy bármely tab kulcs)
+  if(soloTab && TAB_NAMES[soloTab]){
+    SOLO_MODE=true;
+    SOLO_TAB=soloTab;
+    document.title=TAB_NAMES[soloTab]+' — KMN26';
+    document.getElementById('normalMode').style.display='none';
+    document.getElementById('viewMode').style.display='none';
+    document.getElementById('soloMode').style.display='block';
+    document.getElementById('soloTitle').textContent=TAB_NAMES[soloTab]+' — KMN26';
+    return;
+  }
+
+  // VIEW MODE: ?view=arculat stb. (régi működés)
   if(vk&&VIEWS[vk]){
     document.getElementById('normalMode').style.display='none';
+    document.getElementById('soloMode').style.display='none';
     document.getElementById('viewMode').style.display='block';
     CURRENT_VIEW=vk;
     document.getElementById('viewTitle').textContent=VIEWS[vk].name;
     document.getElementById('viewLinkBox').textContent=window.location.href;
+    return;
   }
+
+  // TAB PARAM (régi ?tab= + solo=1 kombináció visszafelé kompatibilitáshoz)
   var urlTab=params.get('tab');
   if(urlTab){
     setTimeout(function(){
       var tabBtn=document.querySelector('[onclick*="\''+urlTab+'\'"]');
       if(tabBtn){
         tabBtn.click();
-        if(params.get('solo')==='1')document.querySelector('.tabs').style.display='none';
+        if(params.get('hidesolo')==='1')document.querySelector('.tabs').style.display='none';
       }
     },100);
   }
