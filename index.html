@@ -236,6 +236,12 @@ var DEFAULT_COLS={
 var TAB_COLS={};
 var VIEW_COLS={};
 
+function getActiveCols(){
+  if(SOLO_MODE) return TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[];
+  if(CURRENT_VIEW) return VIEW_COLS[CURRENT_VIEW]||[];
+  return TAB_COLS[TAB]||DEFAULT_COLS[TAB]||[];
+}
+
 function buildLinkCols(){
   LINK_COLS={};
   ALL_HEADERS.forEach(function(h,i){
@@ -540,7 +546,7 @@ function renderSolo(){
   document.getElementById('soloLegend').style.display=SOLO_TAB==='status'?'flex':'none';
   document.getElementById('soloTable').className=SOLO_TAB==='status'?'status-table':'';
   if(SOLO_TAB==='status')renderStatus(rows,'soloThead','soloTbody');
-  else renderNormal(rows,TAB_COLS[SOLO_TAB]||[0,1,2],'soloThead','soloTbody');
+  else renderNormal(rows,TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[0,1,2],'soloThead','soloTbody');
   document.getElementById('soloCount').textContent=rows.length+' sor';
 }
 function renderNormal(rows,cols,theadId,tbodyId){
@@ -657,10 +663,7 @@ function openModal(i){
   var uzenetBtn=document.getElementById('uzenetModalBtn');
   uzenetBtn.style.display=buildUzenet(r)?'inline-block':'none';
   var h='';
-  var activeCols;
-  if(SOLO_MODE)activeCols=TAB_COLS[SOLO_TAB]||[];
-  else if(CURRENT_VIEW)activeCols=VIEW_COLS[CURRENT_VIEW]||[];
-  else activeCols=TAB_COLS[TAB]||[];
+  var activeCols=getActiveCols();
   var linkColVals=Object.values(LINK_COLS);
   activeCols.forEach(function(ci){
     if(linkColVals.indexOf(ci)>=0)return;
@@ -731,8 +734,7 @@ function checkUrlView(){
   var params=new URLSearchParams(window.location.search);
   var vk=params.get('view');
   var soloTab=params.get('solo');
-  // SOLO MODE
-  if(soloTab && TAB_NAMES[soloTab]){
+  if(soloTab&&TAB_NAMES[soloTab]){
     SOLO_MODE=true;
     SOLO_TAB=soloTab;
     var colsParam=params.get('cols');
@@ -741,6 +743,7 @@ function checkUrlView(){
         TAB_COLS[soloTab]=colsParam.split(',').map(function(x){return parseInt(x,10);}).filter(function(x){return !isNaN(x);});
       }catch(e){}
     }
+    // Ha nincs cols param, a DEFAULT_COLS-t használja (már be van töltve)
     document.title=TAB_NAMES[soloTab]+' — KMN26';
     document.getElementById('normalMode').style.display='none';
     document.getElementById('viewMode').style.display='none';
@@ -748,7 +751,6 @@ function checkUrlView(){
     document.getElementById('soloTitle').textContent=TAB_NAMES[soloTab]+' — KMN26';
     return;
   }
-  // VIEW MODE
   if(vk&&VIEWS[vk]){
     document.getElementById('normalMode').style.display='none';
     document.getElementById('soloMode').style.display='none';
