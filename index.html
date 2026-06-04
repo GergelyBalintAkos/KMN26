@@ -216,6 +216,8 @@ var DEFAULT_COLS={
 var TAB_COLS={};
 var VIEW_COLS={};
 
+function isX(v){return v&&v.trim().toLowerCase()==='x';}
+
 function loadSettingsFromSheets(callback){
   fetch('https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:csv&sheet=settings&_='+Date.now())
     .then(function(r){return r.text();})
@@ -574,13 +576,14 @@ function renderNormal(rows,cols,theadId,tbodyId){
     var ri=ROWS.indexOf(r);
     return'<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
       +visCols.map(function(ci){
-        var v=r[ci]||'';
+        var raw=r[ci]||'';
+        var v=isX(raw)?'':raw;
         if(ci===3)v=hbadge(v);
         else if(ci===8)v=sbadge(v,r.ures)+(v?' <span style="font-size:12px;color:#888">'+v.slice(0,40)+(v.length>40?'…':'')+'</span>':'');
         else if(ci===91||ci===92)v=fmt(v);
         var linkCol=LINK_COLS[ci];
         if(linkCol!==undefined&&r[linkCol])v=v+' <a href="'+r[linkCol]+'" target="_blank" onclick="event.stopPropagation()" style="color:#0a4080;font-size:11px">🔗</a>';
-        return'<td title="'+String(r[ci]||'').replace(/"/g,'&quot;')+'">'+v+'</td>';
+        return'<td title="'+raw.replace(/"/g,'&quot;')+'">'+v+'</td>';
       }).join('')+'</tr>';
   }).join('');
 }
@@ -599,11 +602,12 @@ function renderView(){
     var ri=ROWS.indexOf(r);
     return'<tr class="'+(r.ures?'ures':'')+'" onclick="openModal('+ri+')">'
       +visCols.map(function(ci){
-        var v=r[ci]||'';
+        var raw=r[ci]||'';
+        var v=isX(raw)?'':raw;
         if(ci===3)v=hbadge(v);
         var linkCol=LINK_COLS[ci];
         if(linkCol!==undefined&&r[linkCol])v=v+' <a href="'+r[linkCol]+'" target="_blank" onclick="event.stopPropagation()" style="color:#0a4080;font-size:11px">🔗</a>';
-        return'<td title="'+String(r[ci]||'').replace(/"/g,'&quot;')+'">'+v+'</td>';
+        return'<td title="'+raw.replace(/"/g,'&quot;')+'">'+v+'</td>';
       }).join('')+'</tr>';
   }).join('');
   document.getElementById('viewCount').textContent=rows.length+' sor';
@@ -683,7 +687,8 @@ function openModal(i){
     var lbl=ALL_HEADERS[ci]||'';
     if(!lbl)return;
     var v=r[ci]||'';
-    if(v&&(v.trim().toLowerCase()==='x'||v.trim().toLowerCase()==='alcím'))return;
+    if(isX(v))return;
+    if(v.trim().toLowerCase()==='alcím')return;
     var isAlcim=lbl.indexOf('##')===0;
     if(isAlcim){h+='<div class="msection">'+lbl.replace(/^##\s*/,'')+'</div>';return;}
     var linkCol=LINK_COLS[ci];
