@@ -84,9 +84,7 @@ tr.ures td{color:#bbb;font-style:italic}
 </style>
 </head>
 <body>
-
 <button class="col-toggle-btn" id="colToggleBtn" onclick="toggleColPanel()" title="Oszlopok">⚙</button>
-
 <div id="normalMode">
 <h1>KMN26 — Koncertadatbázis</h1>
 <p>Élő nézet a Google Sheets-ből</p>
@@ -119,7 +117,6 @@ tr.ures td{color:#bbb;font-style:italic}
 <div class="wrap" id="mainWrap"><table id="maintable"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
 <div style="font-size:12px;color:#888;padding:8px 0" id="count"></div>
 </div>
-
 <div id="soloMode" style="display:none">
   <div class="solo-header">
     <div>
@@ -145,7 +142,6 @@ tr.ures td{color:#bbb;font-style:italic}
   <div class="wrap" id="soloWrap"><table id="soloTable"><thead id="soloThead"></thead><tbody id="soloTbody"></tbody></table></div>
   <div style="font-size:12px;color:#888;padding:8px 0" id="soloCount"></div>
 </div>
-
 <div id="viewMode" style="display:none">
 <div class="view-bar">
   <span class="view-title" id="viewTitle"></span>
@@ -164,7 +160,6 @@ tr.ures td{color:#bbb;font-style:italic}
 <div class="wrap" id="viewWrap"><table id="viewTable"><thead id="viewThead"></thead><tbody id="viewTbody"></tbody></table></div>
 <div style="font-size:12px;color:#888;padding:8px 0" id="viewCount"></div>
 </div>
-
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="mbox">
     <button class="mclose" onclick="closeModal()">×</button>
@@ -181,6 +176,7 @@ tr.ures td{color:#bbb;font-style:italic}
 <script>
 var ROWS=[],TAB='foszervezok',SK=null,SD=1;
 var SID='1TU1LasWxZE2wuFUsAXq9hEzyAIym3BDIUnVTmwG18OQ';
+var APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbygLDkOucEYQyMDORGWDD67cvguBUUBvWEgm5F4e7LxqI87Oc3pqHTnnROuZdYtqKZfvQ/exec';
 var ALL_HEADERS=[];
 var LAST_UPDATE='';
 var LINK_COLS={};
@@ -190,7 +186,6 @@ var VIEW_SK=null,VIEW_SD=1;
 var SOLO_MODE=false;
 var SOLO_TAB='';
 var SOLO_SK=null,SOLO_SD=1;
-var SETTINGS_LOADED=false;
 
 var TAB_NAMES={
   all:'📋 Összes',
@@ -201,7 +196,6 @@ var TAB_NAMES={
   muveszpenz:'🎤💰 Művész+pénzügy',
   foszervezok:'👥 Főszervezők'
 };
-
 var VIEWS={
   arculat:{name:'🎨 Arculat',cols:[0,1,2,3,4,5,6,7,9,10,11,12,13,14,15]},
   szallas:{name:'🏨 Szállás & Étkezés',cols:[0,1,2,3,4,5,23,24,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]},
@@ -222,65 +216,36 @@ var DEFAULT_COLS={
 var TAB_COLS={};
 var VIEW_COLS={};
 
-// --- SETTINGS: Google Sheets settings lap ---
-var SETTINGS_GID=''; // gid-et auto-detektáljuk
-
 function loadSettingsFromSheets(callback){
-  // Először megpróbáljuk megtalálni a settings lap gid-jét
-  fetch('https://docs.google.com/spreadsheets/d/'+SID+'/export?format=csv&gid=0&_='+Date.now())
-    .then(function(){
-      // settings lap lekérése - próbáljuk gid nélkül sheet névvel
-      return fetch('https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:csv&sheet=settings&_='+Date.now());
-    })
+  fetch('https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:csv&sheet=settings&_='+Date.now())
     .then(function(r){return r.text();})
     .then(function(t){
-      if(!t||t.indexOf('Error')===0||t.trim()===''){callback();return;}
+      if(!t||t.trim()===''||t.indexOf('Error')===0){callback();return;}
       var rows=parseCSV(t);
-      if(rows.length<2){callback();return;}
-      var loaded=false;
-      for(var i=1;i<rows.length;i++){
-        var key=rows[i][0]?rows[i][0].trim():'';
-        var val=rows[i][1]?rows[i][1].trim():'';
+      for(var i=0;i<rows.length;i++){
+        var key=rows[i][0]?rows[i][0].replace(/^"|"$/g,'').trim():'';
+        var val=rows[i][1]?rows[i][1].replace(/^"|"$/g,'').trim():'';
         if(!key||!val)continue;
         try{
           var parsed=JSON.parse(val);
-          if(key.indexOf('view_')===0){
-            var vk=key.replace('view_','');
-            VIEW_COLS[vk]=parsed;
-          } else if(DEFAULT_COLS[key]!==undefined){
+          if(Array.isArray(parsed)&&DEFAULT_COLS[key]!==undefined){
             TAB_COLS[key]=parsed;
           }
-          loaded=true;
         }catch(e){}
       }
-      SETTINGS_LOADED=loaded;
       callback();
     })
     .catch(function(){callback();});
 }
 
-function saveSettingsToSheets(){
-  // Google Sheets-be közvetlenül nem írhatunk JS-ből publikus CSV-n át
-  // Ezért a beállításokat localStorage-ba és egy látható URL-be mentjük
-  // A settings lapot Google Apps Script-tel lehetne írni, de az külön setup
-  // Helyette: minden eszköz olvassa a localStorage-t ÉS az URL params-t
-  try{
-    Object.keys(TAB_COLS).forEach(function(tab){
-      localStorage.setItem('kmn26_cols_'+tab,JSON.stringify(TAB_COLS[tab]));
-    });
-  }catch(e){}
-}
-
-// --- Google Apps Script URL a settings mentéséhez ---
-// Ha van Apps Script beállítva, ide kerül az URL
-var APPS_SCRIPT_URL='';
-
-function saveColsRemote(tab){
+function saveColsRemote(){
   if(!APPS_SCRIPT_URL)return;
   var data={};
   Object.keys(TAB_COLS).forEach(function(t){data[t]=TAB_COLS[t];});
   fetch(APPS_SCRIPT_URL,{
     method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'saveCols',data:data})
   }).catch(function(){});
 }
@@ -302,10 +267,9 @@ function makeStickyScroll(wrapId){
   wrap.addEventListener('scroll',function(){mirror.scrollLeft=wrap.scrollLeft;});
   setTimeout(function(){inner.style.width=wrap.scrollWidth+'px';},500);
 }
-
 function getActiveCols(){
-  if(SOLO_MODE) return TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[];
-  if(CURRENT_VIEW) return VIEW_COLS[CURRENT_VIEW]||[];
+  if(SOLO_MODE)return TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[];
+  if(CURRENT_VIEW)return VIEW_COLS[CURRENT_VIEW]||[];
   return TAB_COLS[TAB]||DEFAULT_COLS[TAB]||[];
 }
 function buildLinkCols(){
@@ -335,8 +299,7 @@ function saveCols(tab){
     var n=document.getElementById('saveNote');
     if(n){n.textContent='✓ Mentve';setTimeout(function(){n.textContent='';},2000);}
   }catch(e){}
-  saveSettingsToSheets();
-  saveColsRemote(tab);
+  saveColsRemote();
 }
 function saveViewCols(vk){
   try{localStorage.setItem('kmn26_view_'+vk,JSON.stringify(VIEW_COLS[vk]));}catch(e){}
@@ -403,7 +366,7 @@ function renderCellValue(v){
     if(line.indexOf('|')>=0){
       var cols=line.split('|');
       html+='<tr>'+cols.map(function(c){return'<td>'+highlightTba(c.trim())+'</td>';}).join('')+'</tr>';
-    } else {
+    }else{
       html+='<tr><td colspan="10" style="font-weight:500;background:#f9f9f7;padding:6px 8px">'+highlightTba(line.trim())+'</td></tr>';
     }
   });
@@ -429,7 +392,6 @@ function buildUzenet(r){
 function load(){
   var infoEl=SOLO_MODE?document.getElementById('soloInfo'):document.getElementById('info');
   if(infoEl)infoEl.textContent='Betöltés...';
-  // Először betöltjük a settings lapot, majd az adatokat
   loadSettingsFromSheets(function(){
     fetch('https://docs.google.com/spreadsheets/d/'+SID+'/export?format=csv&gid=0&_='+Date.now())
       .then(function(r){return r.arrayBuffer();})
@@ -441,10 +403,10 @@ function load(){
         if(SOLO_MODE){
           document.getElementById('soloInfo').textContent=msg;
           buildLinkCols();buildSoloSelects();renderSolo();
-        } else if(CURRENT_VIEW){
+        }else if(CURRENT_VIEW){
           document.getElementById('info')&&(document.getElementById('info').textContent=msg);
           buildLinkCols();buildSelects();buildColPanel();renderView();buildViewSelects();
-        } else {
+        }else{
           document.getElementById('info').textContent=msg;
           buildLinkCols();buildSelects();buildColPanel();render();
         }
