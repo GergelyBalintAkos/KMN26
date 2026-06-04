@@ -24,20 +24,34 @@ input{min-width:180px}
 .col-panel.open{display:block}
 .col-check{display:flex;align-items:center;gap:6px;font-size:12px;color:#444;cursor:pointer;margin-bottom:5px;break-inside:avoid}
 .col-check input{cursor:pointer;accent-color:#222}
-.wrap{overflow-x:auto;background:#fff;border:1px solid #eee;border-radius:8px}
+/* Sticky scrollbar: mindig látható a vízszintes görgetősáv */
+.wrap{overflow-x:auto;background:#fff;border:1px solid #eee;border-radius:8px;position:relative}
+.wrap::-webkit-scrollbar{height:8px}
+.wrap::-webkit-scrollbar-track{background:#f0f0ee;border-radius:4px}
+.wrap::-webkit-scrollbar-thumb{background:#bbb;border-radius:4px}
+.wrap::-webkit-scrollbar-thumb:hover{background:#888}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{padding:10px 12px;background:#f5f5f3;text-align:left;font-size:12px;color:#666;white-space:nowrap;cursor:pointer;min-width:100px}
-td{padding:9px 12px;border-top:1px solid #f0f0f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+th{padding:8px 10px;background:#f5f5f3;text-align:left;font-size:11px;color:#666;white-space:nowrap;cursor:pointer}
+/* Oszlop szélességek - kompakt */
+th,td{min-width:0}
+td{padding:7px 10px;border-top:1px solid #f0f0f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Rövid adatok kompakt oszlopok */
+td:nth-child(1){max-width:160px} /* Művész */
+td:nth-child(2){max-width:80px}  /* Dátum */
+td:nth-child(3){max-width:60px}  /* Idő */
+td:nth-child(4){max-width:100px} /* Helyszín */
+td:nth-child(5){max-width:80px}  /* Egyéb rövid */
+td:nth-child(n+6){max-width:150px} /* Többi */
 tr:hover td{background:#fafafa;cursor:pointer}
 tr.ures td{color:#bbb;font-style:italic}
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
 .bf{background:#deeeff;color:#0a4080}.bb{background:#eeeaff;color:#3a2090}.bfk{background:#d8f5e8;color:#0a5030}.br{background:#fff0d8;color:#704000}
 .bok{background:#d8f5d8;color:#0a5010}.bvr{background:#fff3d8;color:#705010}.btd{background:#ffd8d8;color:#700010}
 .ok{color:#3a8a3a;font-size:16px}.vr{color:#cc8800;font-size:16px}.ur{color:#bbb;font-size:16px}
-.status-table th{white-space:nowrap;font-size:11px;padding:8px 6px;min-width:70px}
-.status-table td{padding:8px 6px;text-align:center;font-size:15px;min-width:70px}
-.status-table td:first-child{text-align:left;font-size:13px;white-space:nowrap;padding-left:12px;min-width:180px}
-.status-table td:nth-child(2){text-align:left;font-size:12px;white-space:nowrap;min-width:100px}
+.status-table th{white-space:nowrap;font-size:11px;padding:6px 5px;min-width:60px}
+.status-table td{padding:6px 5px;text-align:center;font-size:15px;min-width:60px}
+.status-table td:first-child{text-align:left;font-size:13px;white-space:nowrap;padding-left:10px;min-width:160px;max-width:160px}
+.status-table td:nth-child(2){text-align:left;font-size:12px;white-space:nowrap;min-width:80px;max-width:80px}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;justify-content:center;align-items:flex-start;padding-top:40px}
 .modal.open{display:flex}
 .mbox{background:#fff;border-radius:12px;width:90%;max-width:580px;max-height:85vh;overflow-y:auto;padding:24px;position:relative}
@@ -57,7 +71,7 @@ tr.ures td{color:#bbb;font-style:italic}
 .link-btn{display:inline-block;padding:3px 10px;background:#e8f0fe;color:#0a4080;border-radius:5px;font-size:11px;text-decoration:none;margin-top:4px}
 .link-btn:hover{background:#d0e2ff}
 .mv-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
-.mv-table td{padding:4px 8px;border:1px solid #eee;vertical-align:top;white-space:normal}
+.mv-table td{padding:4px 8px;border:1px solid #eee;vertical-align:top;white-space:normal;max-width:none}
 .mv-table tr:first-child td{background:#f5f5f3;font-weight:500}
 .empty{text-align:center;padding:40px;color:#aaa}
 .legend{display:flex;gap:15px;font-size:12px;color:#666;margin-bottom:10px;flex-wrap:wrap}
@@ -105,7 +119,7 @@ tr.ures td{color:#bbb;font-style:italic}
   <span><span class="vr">⏳</span> Várom / TBA</span>
   <span><span class="ur">—</span> Nincs info</span>
 </div>
-<div class="wrap"><table id="maintable"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+<div class="wrap" id="mainWrap"><table id="maintable"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
 <div style="font-size:12px;color:#888;padding:8px 0" id="count"></div>
 </div>
 
@@ -131,7 +145,7 @@ tr.ures td{color:#bbb;font-style:italic}
     <span><span class="vr">⏳</span> Várom / TBA</span>
     <span><span class="ur">—</span> Nincs info</span>
   </div>
-  <div class="wrap"><table id="soloTable"><thead id="soloThead"></thead><tbody id="soloTbody"></tbody></table></div>
+  <div class="wrap" id="soloWrap"><table id="soloTable"><thead id="soloThead"></thead><tbody id="soloTbody"></tbody></table></div>
   <div style="font-size:12px;color:#888;padding:8px 0" id="soloCount"></div>
 </div>
 
@@ -150,7 +164,7 @@ tr.ures td{color:#bbb;font-style:italic}
   <select id="vfhely" onchange="renderView()"><option value="">Minden helyszín</option></select>
   <select id="vfdat" onchange="renderView()"><option value="">Minden dátum</option></select>
 </div>
-<div class="wrap"><table id="viewTable"><thead id="viewThead"></thead><tbody id="viewTbody"></tbody></table></div>
+<div class="wrap" id="viewWrap"><table id="viewTable"><thead id="viewThead"></thead><tbody id="viewTbody"></tbody></table></div>
 <div style="font-size:12px;color:#888;padding:8px 0" id="viewCount"></div>
 </div>
 
@@ -209,6 +223,27 @@ var DEFAULT_COLS={
 };
 var TAB_COLS={};
 var VIEW_COLS={};
+
+// Sticky scrollbar: tükrözött görgetősáv felül is
+function makeStickyScroll(wrapId){
+  var wrap=document.getElementById(wrapId);
+  if(!wrap)return;
+  // Ha már van tükör, töröljük
+  var old=document.getElementById(wrapId+'_mirror');
+  if(old)old.parentNode.removeChild(old);
+  var mirror=document.createElement('div');
+  mirror.id=wrapId+'_mirror';
+  mirror.style.cssText='overflow-x:auto;overflow-y:hidden;height:10px;margin-bottom:2px';
+  var inner=document.createElement('div');
+  inner.style.cssText='height:1px';
+  inner.style.width=wrap.scrollWidth+'px';
+  mirror.appendChild(inner);
+  wrap.parentNode.insertBefore(mirror,wrap);
+  mirror.addEventListener('scroll',function(){wrap.scrollLeft=mirror.scrollLeft;});
+  wrap.addEventListener('scroll',function(){mirror.scrollLeft=wrap.scrollLeft;});
+  // Frissíti a belső szélesség
+  setTimeout(function(){inner.style.width=wrap.scrollWidth+'px';},500);
+}
 
 function getActiveCols(){
   if(SOLO_MODE) return TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[];
@@ -491,6 +526,7 @@ function render(){
   if(TAB==='status')renderStatus(rows,'thead','tbody');
   else renderNormal(rows,TAB_COLS[TAB]||[0,1,2],'thead','tbody');
   document.getElementById('count').textContent=rows.length+' sor';
+  setTimeout(function(){makeStickyScroll('mainWrap');},100);
 }
 function renderSolo(){
   var rows=getSoloFiltered();
@@ -500,6 +536,7 @@ function renderSolo(){
   if(SOLO_TAB==='status')renderStatus(rows,'soloThead','soloTbody');
   else renderNormal(rows,TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[0,1,2],'soloThead','soloTbody');
   document.getElementById('soloCount').textContent=rows.length+' sor';
+  setTimeout(function(){makeStickyScroll('soloWrap');},100);
 }
 function renderNormal(rows,cols,theadId,tbodyId){
   var linkColVals=Object.values(LINK_COLS);
@@ -546,6 +583,7 @@ function renderView(){
   }).join('');
   document.getElementById('viewCount').textContent=rows.length+' sor';
   document.getElementById('viewInfo').textContent='Frissítve: '+LAST_UPDATE;
+  setTimeout(function(){makeStickyScroll('viewWrap');},100);
 }
 function renderStatus(rows,theadId,tbodyId){
   var STATUS_COLS=[
