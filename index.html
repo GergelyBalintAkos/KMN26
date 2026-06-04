@@ -99,13 +99,6 @@ tr.ures td{color:#bbb;font-style:italic}
   <select id="fdat" onchange="render()"><option value="">Minden dátum</option></select>
   <span class="save-note" id="saveNote"></span>
 </div>
-<div id="soloLinkBar" style="display:none;background:#f0f8e8;border:1px solid #b8e0a0;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:#3a6020">
-  <div style="font-weight:600;margin-bottom:6px">🔗 Solo link ehhez a fülhöz:</div>
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <input type="text" id="soloLinkInput" readonly style="font-family:monospace;font-size:11px;flex:1;min-width:200px;background:#fff;color:#222;border:1px solid #ccc" onclick="this.select()">
-    <button onclick="copySoloLink()" id="copyLinkBtn" style="background:#3a6020;color:#fff;border-color:#3a6020;font-size:12px">📋 Másolás</button>
-  </div>
-</div>
 <div class="col-panel" id="colPanel"></div>
 <div id="legend" class="legend" style="display:none">
   <span><span class="ok">✅</span> Megvan</span>
@@ -133,7 +126,6 @@ tr.ures td{color:#bbb;font-style:italic}
     <select id="sfhely" onchange="renderSolo()"><option value="">Minden helyszín</option></select>
     <select id="sfdat" onchange="renderSolo()"><option value="">Minden dátum</option></select>
   </div>
-  <div class="col-panel" id="soloColPanel"></div>
   <div id="soloLegend" class="legend" style="display:none">
     <span><span class="ok">✅</span> Megvan</span>
     <span><span class="vr">⏳</span> Várom / TBA</span>
@@ -250,27 +242,6 @@ function saveCols(tab){
     var n=document.getElementById('saveNote');
     if(n){n.textContent='✓ Mentve';setTimeout(function(){n.textContent='';},2000);}
   }catch(e){}
-  updateSoloLink(tab);
-}
-function updateSoloLink(tab){
-  var bar=document.getElementById('soloLinkBar');
-  var inp=document.getElementById('soloLinkInput');
-  if(!bar||!inp)return;
-  var cols=TAB_COLS[tab]||DEFAULT_COLS[tab]||[];
-  var base=window.location.origin+window.location.pathname;
-  var link=base+'?solo='+tab+'&cols='+cols.join(',');
-  inp.value=link;
-  bar.style.display='block';
-}
-function copySoloLink(){
-  var inp=document.getElementById('soloLinkInput');
-  if(!inp)return;
-  inp.select();
-  navigator.clipboard.writeText(inp.value).then(function(){
-    var btn=document.getElementById('copyLinkBtn');
-    btn.textContent='✅ Másolva!';
-    setTimeout(function(){btn.textContent='📋 Másolás';},2000);
-  });
 }
 function saveViewCols(vk){
   try{localStorage.setItem('kmn26_view_'+vk,JSON.stringify(VIEW_COLS[vk]));}catch(e){}
@@ -611,7 +582,6 @@ function setTab(t,btn){
   btn.classList.add('on');
   document.getElementById('colPanel').classList.remove('open');
   document.getElementById('colToggleBtn').classList.remove('open');
-  updateSoloLink(t);
   render();
 }
 function printView(){
@@ -728,7 +698,6 @@ function checkUrlView(){
     document.getElementById('viewMode').style.display='none';
     document.getElementById('soloMode').style.display='block';
     document.getElementById('soloTitle').textContent=TAB_NAMES[soloTab]+' — KMN26';
-    // Solo módban az ⚙ gombot elrejtjük
     var cBtn=document.getElementById('colToggleBtn');
     if(cBtn)cBtn.style.display='none';
     return;
