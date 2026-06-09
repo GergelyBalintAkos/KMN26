@@ -230,6 +230,12 @@ function loadSettingsFromSheets(callback){
           if(Array.isArray(parsed)&&DEFAULT_COLS[key]!==undefined){
             TAB_COLS[key]=parsed;
           }
+          if(key.indexOf('view_')===0){
+            var vk=key.replace('view_','');
+            if(VIEWS[vk]!==undefined&&Array.isArray(parsed)){
+              VIEW_COLS[vk]=parsed;
+            }
+          }
         }catch(e){}
       }
       callback();
@@ -240,6 +246,7 @@ function saveColsRemote(){
   if(!APPS_SCRIPT_URL)return;
   var data={};
   Object.keys(TAB_COLS).forEach(function(t){data[t]=TAB_COLS[t];});
+  Object.keys(VIEW_COLS).forEach(function(k){data['view_'+k]=VIEW_COLS[k];});
   fetch(APPS_SCRIPT_URL,{
     method:'POST',
     mode:'no-cors',
@@ -300,6 +307,7 @@ function saveCols(tab){
 }
 function saveViewCols(vk){
   try{localStorage.setItem('kmn26_view_'+vk,JSON.stringify(VIEW_COLS[vk]));}catch(e){}
+  saveColsRemote();
 }
 function parseCSV(text){
   var rows=[],row=[],cur='',q=false;
