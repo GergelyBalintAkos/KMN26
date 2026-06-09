@@ -186,7 +186,6 @@ var VIEW_SK=null,VIEW_SD=1;
 var SOLO_MODE=false;
 var SOLO_TAB='';
 var SOLO_SK=null,SOLO_SD=1;
-
 var TAB_NAMES={
   all:'📋 Összes',
   todo:'✅ Bálint teendők',
@@ -215,9 +214,7 @@ var DEFAULT_COLS={
 };
 var TAB_COLS={};
 var VIEW_COLS={};
-
 function isX(v){return v&&v.trim().toLowerCase()==='x';}
-
 function loadSettingsFromSheets(callback){
   fetch('https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:csv&sheet=settings&_='+Date.now())
     .then(function(r){return r.text();})
@@ -239,7 +236,6 @@ function loadSettingsFromSheets(callback){
     })
     .catch(function(){callback();});
 }
-
 function saveColsRemote(){
   if(!APPS_SCRIPT_URL)return;
   var data={};
@@ -251,7 +247,6 @@ function saveColsRemote(){
     body:JSON.stringify({action:'saveCols',data:data})
   }).catch(function(){});
 }
-
 function makeStickyScroll(wrapId){
   var wrap=document.getElementById(wrapId);
   if(!wrap)return;
@@ -360,7 +355,10 @@ function highlightTba(v){
 }
 function renderCellValue(v){
   if(!v)return'—';
-  if(v.indexOf('|')<0)return highlightTba(v);
+  if(v.indexOf('|')<0){
+    if(isLink(v))return'<a href="'+v+'" target="_blank" class="link-btn">🔗 Megnyitás</a>';
+    return highlightTba(v);
+  }
   var lines=v.trim().split('\n');
   var html='<table class="mv-table">';
   lines.forEach(function(line){
@@ -681,9 +679,7 @@ function openModal(i){
   uzenetBtn.style.display=buildUzenet(r)?'inline-block':'none';
   var h='';
   var activeCols=getActiveCols();
-  var linkColVals=Object.values(LINK_COLS);
   activeCols.forEach(function(ci){
-    if(linkColVals.indexOf(ci)>=0)return;
     var lbl=ALL_HEADERS[ci]||'';
     if(!lbl)return;
     var v=r[ci]||'';
@@ -691,14 +687,11 @@ function openModal(i){
     if(v.trim().toLowerCase()==='alcím')return;
     var isAlcim=lbl.indexOf('##')===0;
     if(isAlcim){h+='<div class="msection">'+lbl.replace(/^##\s*/,'')+'</div>';return;}
-    var linkCol=LINK_COLS[ci];
-    var linkVal=linkCol!==undefined?r[linkCol]||'':'';
     var vhtml=renderCellValue(v);
     var mvCls=getMvClass(v);
     var bold=ci===0?'font-weight:600;font-size:14px;':'';
-    var linkHtml=isLink(linkVal)?'<br><a href="'+linkVal+'" target="_blank" class="link-btn">🔗 Megnyitás</a>':'';
     var valHtml=mvCls?'<span class="'+mvCls+'">'+vhtml+'</span>':vhtml;
-    h+='<div class="mfield"><div class="ml">'+lbl+'</div><div class="mv" style="'+bold+'">'+valHtml+linkHtml+'</div></div>';
+    h+='<div class="mfield"><div class="ml">'+lbl+'</div><div class="mv" style="'+bold+'">'+valHtml+'</div></div>';
   });
   h+='<div style="font-size:10px;color:#ddd;margin-top:16px;padding-top:8px;border-top:1px solid #f0f0f0">Frissítés: '+LAST_UPDATE+'</div>';
   document.getElementById('mbody').innerHTML=h;
@@ -725,7 +718,7 @@ function printModal(){
   html+='.msection{margin:18px 0 6px 0;padding:9px 14px;background:#efefed;border-radius:6px;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.8px;border-left:3px solid #ccc}';
   html+='.mv-varom{background:#ffeaea;border-radius:4px;padding:2px 7px;color:#c00;display:inline}';
   html+='.mv-tba{background:#fff8e8;border-radius:4px;padding:2px 7px;color:#a06000;display:inline}';
-  html+='.link-btn{display:none}';
+  html+='.link-btn{display:inline-block;padding:3px 10px;background:#e8f0fe;color:#0a4080;border-radius:5px;font-size:11px;text-decoration:none}';
   html+='table.mv-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}';
   html+='table.mv-table td{padding:4px 8px;border:1px solid #eee;vertical-align:top}';
   html+='</style></head><body>';
