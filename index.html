@@ -676,7 +676,7 @@ function printView(){
 function openModal(i){
   CURRENT_ROW_IDX=i;
   var r=ROWS[i];
-  document.getElementById('msub').textContent=(r[1]||'')+(r[2]?' · '+r[2]:'')+(r[4]?' · '+r[4]:'');
+  document.getElementById('msub').textContent=(r[3]||'')+(r[4]?' · '+r[4]:'')+(r[6]?' · '+r[6]:'');
   var uzenetBtn=document.getElementById('uzenetModalBtn');
   uzenetBtn.style.display=buildUzenet(r)?'inline-block':'none';
   var h='';
