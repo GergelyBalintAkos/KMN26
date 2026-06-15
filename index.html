@@ -216,10 +216,12 @@ function loadSettingsFromSheets(callback){
     .then(function(t){
       if(!t||t.trim()===''||t.indexOf('Error')===0){callback();return;}
       var rows=parseCSV(t);
-      for(var i=0;i<rows.length;i++){
+      var seen={};
+      for(var i=rows.length-1;i>=0;i--){
         var key=rows[i][0]?rows[i][0].replace(/^"|"$/g,'').trim():'';
         var val=rows[i][1]?rows[i][1].replace(/^"|"$/g,'').trim():'';
-        if(!key||!val)continue;
+        if(!key||!val||seen[key])continue;
+        seen[key]=true;
         try{
           var parsed=JSON.parse(val);
           if(Array.isArray(parsed)&&DEFAULT_COLS[key]!==undefined){
@@ -244,8 +246,7 @@ function saveColsRemote(){
   Object.keys(VIEW_COLS).forEach(function(k){data['view_'+k]=VIEW_COLS[k];});
   fetch(APPS_SCRIPT_URL,{
     method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({action:'saveCols',data:data})
   }).catch(function(){});
 }
