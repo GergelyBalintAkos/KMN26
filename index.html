@@ -517,7 +517,6 @@ function getFiltered(){
   return ROWS.filter(function(r){
     if(r.ures)return false;
     if(TAB==='todo'&&!r[8])return false;
-    if(TAB==='money'&&!r[91])return false;
     if(q){var all='';for(var i=0;i<ALL_HEADERS.length;i++)all+=r[i]+' ';if(all.toLowerCase().indexOf(q)<0)return false;}
     if(fh&&r[5]!==fh)return false;
     if(fd&&r[3]!==fd)return false;
