@@ -74,6 +74,8 @@ tr.ures td{color:#bbb;font-style:italic}
 .legend{display:flex;gap:15px;font-size:12px;color:#666;margin-bottom:10px;flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:4px}
 .save-note{font-size:11px;color:#3a8a3a;margin-left:8px}
+.share-btn{padding:7px 14px;background:#1a5c2a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px}
+.share-btn:hover{background:#144d22}
 .view-bar{background:#f0f0ee;border-radius:8px;padding:10px 15px;margin-bottom:15px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .view-title{font-size:16px;font-weight:600;color:#222}
 .view-link-box{background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;font-size:12px;color:#555;font-family:monospace;flex:1;min-width:200px}
@@ -92,6 +94,8 @@ tr.ures td{color:#bbb;font-style:italic}
   <span class="dot"></span>
   <span id="info">Betöltés...</span>
   <button onclick="load()">↻ Frissítés</button>
+  <button class="share-btn" onclick="saveToSheets()">💾 Mentés megosztáshoz</button>
+  <span class="save-note" id="shareNote"></span>
 </div>
 <div class="tabs">
   <button class="tab on" onclick="setTab('foszervezok',this)">👥 Főszervezők</button>
@@ -239,8 +243,9 @@ function loadSettingsFromSheets(callback){
     })
     .catch(function(){callback();});
 }
-function saveColsRemote(){
-  if(!APPS_SCRIPT_URL)return;
+function saveToSheets(){
+  var n=document.getElementById('shareNote');
+  n.textContent='Mentés...';
   var data={};
   Object.keys(TAB_COLS).forEach(function(t){data[t]=TAB_COLS[t];});
   Object.keys(VIEW_COLS).forEach(function(k){data['view_'+k]=VIEW_COLS[k];});
@@ -248,7 +253,13 @@ function saveColsRemote(){
     method:'POST',
     headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({action:'saveCols',data:data})
-  }).catch(function(){});
+  }).then(function(){
+    n.textContent='✓ Elmentve!';
+    setTimeout(function(){n.textContent='';},3000);
+  }).catch(function(){
+    n.textContent='⚠ Hiba';
+    setTimeout(function(){n.textContent='';},3000);
+  });
 }
 function makeStickyScroll(wrapId){
   var wrap=document.getElementById(wrapId);
@@ -299,11 +310,9 @@ function saveCols(tab){
     var n=document.getElementById('saveNote');
     if(n){n.textContent='✓ Mentve';setTimeout(function(){n.textContent='';},2000);}
   }catch(e){}
-  saveColsRemote();
 }
 function saveViewCols(vk){
   try{localStorage.setItem('kmn26_view_'+vk,JSON.stringify(VIEW_COLS[vk]));}catch(e){}
-  saveColsRemote();
 }
 function parseCSV(text){
   var rows=[],row=[],cur='',q=false;
