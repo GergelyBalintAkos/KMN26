@@ -95,11 +95,9 @@ tr.ures td{color:#bbb;font-style:italic}
 </div>
 <div class="tabs">
   <button class="tab on" onclick="setTab('foszervezok',this)">👥 Főszervezők</button>
-  <button class="tab" onclick="setTab('all',this)">📋 Összes</button>
+  <button class="tab" onclick="setTab('all',this)">📋 Ütemterv</button>
   <button class="tab" onclick="setTab('todo',this)">✅ Bálint teendők</button>
-  <button class="tab" onclick="setTab('status',this)">📊 Státusz</button>
   <button class="tab" onclick="setTab('money',this)">💰 Pénzügy</button>
-  <button class="tab" onclick="setTab('muvesz',this)">🎤 Művész</button>
   <button class="tab" onclick="setTab('muveszpenz',this)">🎤💰 Művész+pénzügy</button>
 </div>
 <div class="filters">
@@ -187,11 +185,9 @@ var SOLO_MODE=false;
 var SOLO_TAB='';
 var SOLO_SK=null,SOLO_SD=1;
 var TAB_NAMES={
-  all:'📋 Összes',
+  all:'📋 Ütemterv',
   todo:'✅ Bálint teendők',
-  status:'📊 Státusz',
   money:'💰 Pénzügy',
-  muvesz:'🎤 Művész',
   muveszpenz:'🎤💰 Művész+pénzügy',
   foszervezok:'👥 Főszervezők'
 };
@@ -208,7 +204,6 @@ var DEFAULT_COLS={
   all:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121],
   todo:[0,1,3,4,8],
   money:[0,1,3,4,91,92,93,94,95,97,98,104,107,108,109,110,111],
-  muvesz:[0,1,2,3,4,8,112,113,114,115,116,10,13,17,20,24,27,28,29,80],
   muveszpenz:[0,1,2,3,4,8,112,113,114,115,116,10,13,17,20,24,27,28,29,80,91,97,98,104,107,110,111],
   foszervezok:[0,1,2,3,4,5,6]
 };
@@ -453,7 +448,6 @@ function buildViewSelects(){
   Object.keys(datumok).sort().forEach(function(v){sd.innerHTML+='<option>'+v+'</option>';});
 }
 function buildColPanel(){
-  if(TAB==='status')return;
   var cols=TAB_COLS[TAB]||[],html='';
   ALL_HEADERS.forEach(function(h,i){
     if(!h)return;
@@ -549,21 +543,19 @@ function getViewFiltered(){
 function render(){
   var rows=getFiltered();
   if(SK!==null)rows.sort(function(a,b){return String(a[SK]||'').localeCompare(String(b[SK]||''),'hu')*SD;});
-  document.getElementById('legend').style.display=TAB==='status'?'flex':'none';
-  document.getElementById('colToggleBtn').style.display=TAB==='status'?'none':'inline-block';
-  document.getElementById('maintable').className=TAB==='status'?'status-table':'';
-  if(TAB==='status')renderStatus(rows,'thead','tbody');
-  else renderNormal(rows,TAB_COLS[TAB]||[0,1,2],'thead','tbody');
+  document.getElementById('legend').style.display='none';
+  document.getElementById('colToggleBtn').style.display='inline-block';
+  document.getElementById('maintable').className='';
+  renderNormal(rows,TAB_COLS[TAB]||[0,1,2],'thead','tbody');
   document.getElementById('count').textContent=rows.length+' sor';
   setTimeout(function(){makeStickyScroll('mainWrap');},100);
 }
 function renderSolo(){
   var rows=getSoloFiltered();
   if(SOLO_SK!==null)rows.sort(function(a,b){return String(a[SOLO_SK]||'').localeCompare(String(b[SOLO_SK]||''),'hu')*SOLO_SD;});
-  document.getElementById('soloLegend').style.display=SOLO_TAB==='status'?'flex':'none';
-  document.getElementById('soloTable').className=SOLO_TAB==='status'?'status-table':'';
-  if(SOLO_TAB==='status')renderStatus(rows,'soloThead','soloTbody');
-  else renderNormal(rows,TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[0,1,2],'soloThead','soloTbody');
+  document.getElementById('soloLegend').style.display='none';
+  document.getElementById('soloTable').className='';
+  renderNormal(rows,TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[0,1,2],'soloThead','soloTbody');
   document.getElementById('soloCount').textContent=rows.length+' sor';
   setTimeout(function(){makeStickyScroll('soloWrap');},100);
 }
@@ -615,29 +607,6 @@ function renderView(){
   document.getElementById('viewCount').textContent=rows.length+' sor';
   document.getElementById('viewInfo').textContent='Frissítve: '+LAST_UPDATE;
   setTimeout(function(){makeStickyScroll('viewWrap');},100);
-}
-function renderStatus(rows,theadId,tbodyId){
-  var STATUS_COLS=[
-    {k:10,l:'Fotók'},{k:13,l:'Leírás'},{k:17,l:'Rider'},
-    {k:24,l:'Járművek'},{k:27,l:'Stáb'},{k:28,l:'Fellépők'},
-    {k:29,l:'Érk. dátum'},{k:30,l:'Érk. idő'},
-    {k:33,l:'Visszaut.'},{k:34,l:'Visszaut. idő'},
-    {k:31,l:'Check In'},{k:35,l:'Check Out'},
-    {k:37,l:'Szobák'},{k:39,l:'Szálláslista'},
-    {k:42,l:'Veget/Allerg'},{k:80,l:'Playlist'}
-  ];
-  var hdr='<tr><th>Művész</th><th>Helyszín</th>';
-  STATUS_COLS.forEach(function(c){hdr+='<th>'+c.l+'</th>';});
-  hdr+='</tr>';
-  document.getElementById(theadId).innerHTML=hdr;
-  if(!rows.length){document.getElementById(tbodyId).innerHTML='<tr><td colspan="'+(STATUS_COLS.length+2)+'"><div class="empty">Nincs találat.</div></td></tr>';return;}
-  document.getElementById(tbodyId).innerHTML=rows.map(function(r){
-    var ri=ROWS.indexOf(r);
-    var cells='<td onclick="openModal('+ri+')" style="cursor:pointer" title="'+r[0]+'">'+r[0]+'</td>';
-    cells+='<td>'+hbadge(r[5])+'</td>';
-    STATUS_COLS.forEach(function(c){cells+='<td onclick="openModal('+ri+')" style="cursor:pointer">'+cellStatus(r[c.k])+'</td>';});
-    return'<tr>'+cells+'</tr>';
-  }).join('');
 }
 function sortBy(theadId,k){
   if(theadId==='soloThead'){if(SOLO_SK===k)SOLO_SD*=-1;else{SOLO_SK=k;SOLO_SD=1;}renderSolo();}
