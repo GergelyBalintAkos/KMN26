@@ -72,7 +72,6 @@ tr.ures td{color:#bbb;font-style:italic}
 .save-note{font-size:11px;color:#3a8a3a;margin-left:8px}
 .view-bar{background:#f0f0ee;border-radius:8px;padding:10px 15px;margin-bottom:15px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .view-title{font-size:16px;font-weight:600;color:#222}
-.view-link-box{background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;font-size:12px;color:#555;font-family:monospace;flex:1;min-width:200px}
 .view-print-btn{padding:7px 14px;background:#222;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px}
 .solo-header{background:#222;color:#fff;border-radius:8px;padding:12px 16px;margin-bottom:15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .solo-header-title{font-size:17px;font-weight:600;letter-spacing:0.2px}
@@ -130,20 +129,17 @@ tr.ures td{color:#bbb;font-style:italic}
     <select id="sfhely" onchange="renderSolo()"><option value="">Minden helyszín</option></select>
     <select id="sfdat" onchange="renderSolo()"><option value="">Minden dátum</option></select>
   </div>
-  <div id="soloLegend" class="legend" style="display:none">
-    <span><span class="ok">✅</span> Megvan</span>
-    <span><span class="vr">⏳</span> Várom / TBA</span>
-    <span><span class="ur">—</span> Nincs info</span>
-  </div>
   <div class="wrap" id="soloWrap"><table id="soloTable"><thead id="soloThead"></thead><tbody id="soloTbody"></tbody></table></div>
   <div style="font-size:12px;color:#888;padding:8px 0" id="soloCount"></div>
 </div>
 <div id="viewMode" style="display:none">
-<div class="view-bar" id="viewBar">
+<div class="view-bar">
   <span class="view-title" id="viewTitle"></span>
   <span class="dot"></span>
   <span id="viewInfo" style="font-size:12px;color:#666"></span>
+  <button class="view-print-btn" onclick="printView()">🖨️ PDF</button>
 </div>
+<div class="col-panel" id="viewColPanel"></div>
 <div class="filters">
   <input type="text" id="vq" placeholder="Keresés..." oninput="renderView()">
   <select id="vfhely" onchange="renderView()"><option value="">Minden helyszín</option></select>
@@ -179,6 +175,7 @@ var SOLO_MODE=false;
 var SOLO_TAB='';
 var SOLO_SK=null,SOLO_SD=1;
 var VIEW_MODE=false;
+var ADMIN_MODE=false;
 var TAB_NAMES={
   all:'📋 Ütemterv',
   todo:'✅ Bálint teendők',
@@ -219,14 +216,10 @@ function loadSettingsFromSheets(callback){
         seen[key]=true;
         try{
           var parsed=JSON.parse(val);
-          if(Array.isArray(parsed)&&DEFAULT_COLS[key]!==undefined){
-            TAB_COLS[key]=parsed;
-          }
+          if(Array.isArray(parsed)&&DEFAULT_COLS[key]!==undefined){TAB_COLS[key]=parsed;}
           if(key.indexOf('view_')===0){
             var vk=key.replace('view_','');
-            if(VIEWS[vk]!==undefined&&Array.isArray(parsed)){
-              VIEW_COLS[vk]=parsed;
-            }
+            if(VIEWS[vk]!==undefined&&Array.isArray(parsed)){VIEW_COLS[vk]=parsed;}
           }
         }catch(e){}
       }
@@ -346,11 +339,6 @@ function getMvClass(v){
   if(isVarom(v))return 'mv-varom';
   return '';
 }
-function cellStatus(v){
-  if(!v||v.trim()==='')return '<span class="ur">-</span>';
-  if(isVarom(v))return '<span class="vr" title="'+v+'">⏳</span>';
-  return '<span class="ok" title="'+v+'">✅</span>';
-}
 function isLink(v){return v&&/^https?:\/\//.test(v.trim());}
 function highlightTba(v){
   if(!v)return v;
@@ -411,6 +399,7 @@ function load(){
         }else if(CURRENT_VIEW){
           document.getElementById('viewInfo').textContent=msg;
           buildLinkCols();buildViewSelects();renderView();
+          if(ADMIN_MODE)buildViewColPanel();
         }else{
           document.getElementById('info').textContent=msg;
           buildLinkCols();buildSelects();buildColPanel();render();
@@ -486,6 +475,10 @@ function toggleColPanel(){
   var p=document.getElementById('colPanel'),b=document.getElementById('colToggleBtn');
   buildColPanel();p.classList.toggle('open');b.classList.toggle('open');
 }
+function toggleViewColPanel(){
+  var p=document.getElementById('viewColPanel'),b=document.getElementById('colToggleBtn');
+  buildViewColPanel();p.classList.toggle('open');b.classList.toggle('open');
+}
 function hbadge(h){
   if(!h)return'';
   var l=h.toLowerCase();
@@ -551,7 +544,6 @@ function render(){
 function renderSolo(){
   var rows=getSoloFiltered();
   if(SOLO_SK!==null)rows.sort(function(a,b){return String(a[SOLO_SK]||'').localeCompare(String(b[SOLO_SK]||''),'hu')*SOLO_SD;});
-  document.getElementById('soloLegend').style.display='none';
   document.getElementById('soloTable').className='';
   renderNormal(rows,TAB_COLS[SOLO_TAB]||DEFAULT_COLS[SOLO_TAB]||[0,1,2],'soloThead','soloTbody');
   document.getElementById('soloCount').textContent=rows.length+' sor';
@@ -609,8 +601,6 @@ function sortBy(theadId,k){
   if(theadId==='soloThead'){if(SOLO_SK===k)SOLO_SD*=-1;else{SOLO_SK=k;SOLO_SD=1;}renderSolo();}
   else{if(SK===k)SD*=-1;else{SK=k;SD=1;}render();}
 }
-function sort(k){if(SK===k)SD*=-1;else{SK=k;SD=1;}render();}
-function sortView(k){if(VIEW_SK===k)VIEW_SD*=-1;else{VIEW_SK=k;VIEW_SD=1;}renderView();}
 function setTab(t,btn){
   TAB=t;SK=null;
   document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});
@@ -619,11 +609,27 @@ function setTab(t,btn){
   document.getElementById('colToggleBtn').classList.remove('open');
   render();
 }
+function printView(){
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>';
+  html+='body{font-family:sans-serif;padding:20px;font-size:12px;color:#222}';
+  html+='table{width:100%;border-collapse:collapse}';
+  html+='th{padding:8px 10px;background:#f5f5f3;text-align:left;font-size:11px;color:#666;border-bottom:2px solid #ddd}';
+  html+='td{padding:7px 10px;border-bottom:1px solid #eee;font-size:12px}';
+  html+='.badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px}';
+  html+='.bf{background:#deeeff;color:#0a4080}.bb{background:#eeeaff;color:#3a2090}.bfk{background:#d8f5e8;color:#0a5030}.br{background:#fff0d8;color:#704000}';
+  html+='</style></head><body>';
+  html+='<h2>'+VIEWS[CURRENT_VIEW].name+' — KMN26</h2>';
+  html+=document.getElementById('viewTable').outerHTML;
+  html+='</body></html>';
+  var w=window.open('','_blank','width=900,height=700');
+  w.document.write(html);w.document.close();
+  setTimeout(function(){w.print();},500);
+}
 function openModal(i){
   CURRENT_ROW_IDX=i;
   var r=ROWS[i];
   document.getElementById('msub').textContent=(r[3]||'')+(r[4]?' · '+r[4]:'')+(r[6]?' · '+r[6]:'');
-  if(VIEW_MODE){
+  if(VIEW_MODE&&!ADMIN_MODE){
     document.getElementById('modalBtns').style.display='none';
   }else{
     document.getElementById('modalBtns').style.display='flex';
@@ -638,8 +644,7 @@ function openModal(i){
     var v=r[ci]||'';
     if(isX(v))return;
     if(v.trim().toLowerCase()==='alcím')return;
-    var isAlcim=lbl.indexOf('##')===0;
-    if(isAlcim){h+='<div class="msection">'+lbl.replace(/^##\s*/,'')+'</div>';return;}
+    if(lbl.indexOf('##')===0){h+='<div class="msection">'+lbl.replace(/^##\s*/,'')+'</div>';return;}
     var vhtml=renderCellValue(v);
     var mvCls=getMvClass(v);
     var bold=ci===0?'font-weight:600;font-size:14px;':'';
@@ -698,6 +703,8 @@ function checkUrlView(){
   var params=new URLSearchParams(window.location.search);
   var vk=params.get('view');
   var soloTab=params.get('solo');
+  var admin=params.get('admin')==='1';
+  ADMIN_MODE=admin;
   if(soloTab&&TAB_NAMES[soloTab]){
     SOLO_MODE=true;
     SOLO_TAB=soloTab;
@@ -715,11 +722,16 @@ function checkUrlView(){
     document.getElementById('normalMode').style.display='none';
     document.getElementById('soloMode').style.display='none';
     document.getElementById('viewMode').style.display='block';
-    document.getElementById('colToggleBtn').style.display='none';
-    document.getElementById('saveBtn').style.display='none';
-    document.getElementById('shareNote').style.display='none';
     CURRENT_VIEW=vk;
     document.getElementById('viewTitle').textContent=VIEWS[vk].name;
+    if(admin){
+      document.getElementById('colToggleBtn').style.display='inline-block';
+      document.getElementById('colToggleBtn').onclick=toggleViewColPanel;
+      document.getElementById('saveBtn').style.display='inline-block';
+    }else{
+      document.getElementById('colToggleBtn').style.display='none';
+      document.getElementById('saveBtn').style.display='none';
+    }
     return;
   }
   var urlTab=params.get('tab');
